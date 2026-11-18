@@ -1,0 +1,12 @@
+{
+  "name": "livreo",
+  "private": true,
+  "scripts": {
+    "dev": "node tools/start.mjs",
+    "frontend": "npm --prefix frontend run dev",
+    "backend": "npm --prefix backend run dev",
+    "build": "npm --prefix frontend run build",
+    "lint": "npm --prefix frontend run lint",
+    "test": "node --test frontend/tests/adminMetrics.test.js frontend/tests/deliveryRules.test.js backend/tests/profilePhoto.service.test.js"
+  }
+}

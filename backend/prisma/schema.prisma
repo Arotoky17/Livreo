@@ -1,0 +1,152 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum Role {
+  ADMIN
+  SELLER
+  DELIVERY
+}
+
+enum OrderStatus {
+  EN_ATTENTE
+  VALIDEE
+  AFFECTEE
+  EN_ROUTE
+  LIVREE
+  ECHEC
+  REPROGRAMMEE
+  ANNULEE
+}
+
+enum PaymentMethod {
+  CASH_ON_DELIVERY
+  PREPAID
+}
+
+model User {
+  id              String          @id @default(uuid())
+  nom             String
+  email           String          @unique
+  password        String
+  telephone       String?
+  role            Role            @default(SELLER)
+  isActive        Boolean         @default(true)
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+
+  orders          Order[]         @relation("SellerOrders")
+  deliveries      Delivery[]      @relation("DeliveryPersonDeliveries")
+  statusHistories StatusHistory[] @relation("ChangedByUser")
+
+  @@map("users")
+}
+
+model Zone {
+  id             String   @id @default(uuid())
+  nom            String   @unique
+  description    String?
+  fraisLivraison Float
+  isActive       Boolean  @default(true)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  orders         Order[]
+
+  @@map("zones")
+}
+
+model Order {
+  id                  String        @id @default(uuid())
+  sellerId            String
+  seller              User          @relation("SellerOrders", fields: [sellerId], references: [id])
+  zoneId              String
+  zone                Zone          @relation(fields: [zoneId], references: [id])
+  customerName        String
+  customerPhone       String
+  deliveryAddress     String
+  deliveryDetails     String?
+  paymentMethod       PaymentMethod @default(CASH_ON_DELIVERY)
+  totalProductsAmount Float         @default(0)
+  deliveryFee         Float         @default(0)
+  totalAmount         Float         @default(0)
+  status              OrderStatus   @default(EN_ATTENTE)
+  notes               String?
+  createdAt           DateTime      @default(now())
+  updatedAt           DateTime      @updatedAt
+
+  items               OrderItem[]
+  delivery            Delivery?
+
+  @@map("orders")
+}
+
+model OrderItem {
+  id          String   @id @default(uuid())
+  orderId     String
+  order       Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  productName String
+  quantity    Int      @default(1)
+  unitPrice   Float
+  totalPrice  Float
+
+  @@map("order_items")
+}
+
+model Delivery {
+  id               String          @id @default(uuid())
+  orderId          String          @unique
+  order            Order           @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  deliveryPersonId String?
+  deliveryPerson   User?           @relation("DeliveryPersonDeliveries", fields: [deliveryPersonId], references: [id])
+  trackingCode     String          @unique
+  status           OrderStatus     @default(VALIDEE)
+  failureReason    String?
+  collectedAmount  Float?
+  sellerPayout     Float?
+  notes            String?
+  assignedAt       DateTime?
+  startedAt        DateTime?
+  completedAt      DateTime?
+  createdAt        DateTime        @default(now())
+  updatedAt        DateTime        @updatedAt
+
+  gpsLogs          GpsLog[]
+  statusHistories  StatusHistory[]
+
+  @@map("deliveries")
+}
+
+model GpsLog {
+  id         String   @id @default(uuid())
+  deliveryId String
+  delivery   Delivery @relation(fields: [deliveryId], references: [id], onDelete: Cascade)
+  latitude   Float
+  longitude  Float
+  accuracy   Float?
+  speed      Float?
+  heading    Float?
+  recordedAt DateTime @default(now())
+
+  @@index([deliveryId, recordedAt])
+  @@map("gps_logs")
+}
+
+model StatusHistory {
+  id          String      @id @default(uuid())
+  deliveryId  String
+  delivery    Delivery    @relation(fields: [deliveryId], references: [id], onDelete: Cascade)
+  status      OrderStatus
+  comment     String?
+  changedById String?
+  changedBy   User?       @relation("ChangedByUser", fields: [changedById], references: [id])
+  createdAt   DateTime    @default(now())
+
+  @@index([deliveryId, createdAt])
+  @@map("status_histories")
+}
