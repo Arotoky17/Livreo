@@ -71,6 +71,8 @@ model Order {
   customerPhone       String
   deliveryAddress     String
   deliveryDetails     String?
+  destinationLatitude  Float?
+  destinationLongitude Float?
   paymentMethod       PaymentMethod @default(CASH_ON_DELIVERY)
   totalProductsAmount Float         @default(0)
   deliveryFee         Float         @default(0)

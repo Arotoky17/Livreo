@@ -100,7 +100,7 @@ npm.cmd test
 
 Les commandes Prisma se lancent dans `backend` : `npm.cmd run prisma:generate`, `npm.cmd run prisma:migrate` et `npm.cmd run prisma:studio`.
 
-`npm.cmd run prisma:seed` exécute `prisma/seed.js` et réinitialise les données de démonstration. Cette commande n’est pas nécessaire après un renommage de fichiers.
+`npm.cmd run prisma:seed` crée les comptes de base et les zones manquantes. Les commandes et les livreurs se créent manuellement depuis l’administration.
 
 ## Photos de profil
 

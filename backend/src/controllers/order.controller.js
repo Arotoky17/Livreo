@@ -9,6 +9,8 @@ export const createOrder = async (req, res, next) => {
       customerPhone,
       deliveryAddress,
       deliveryDetails,
+      destinationLatitude,
+      destinationLongitude,
       paymentMethod = 'CASH_ON_DELIVERY',
       items,
       notes,
@@ -21,6 +23,17 @@ export const createOrder = async (req, res, next) => {
       return res.status(400).json({
         success: false,
         message: 'La zone, le nom du client, le téléphone et l’adresse sont obligatoires.',
+      });
+    }
+
+    const hasDestination = destinationLatitude != null || destinationLongitude != null;
+    if (hasDestination && (
+      !Number.isFinite(destinationLatitude) || Math.abs(destinationLatitude) > 90 ||
+      !Number.isFinite(destinationLongitude) || Math.abs(destinationLongitude) > 180
+    )) {
+      return res.status(400).json({
+        success: false,
+        message: 'Indiquez une latitude entre -90 et 90 et une longitude entre -180 et 180.',
       });
     }
 
@@ -67,6 +80,8 @@ export const createOrder = async (req, res, next) => {
         customerPhone: customerPhone.trim(),
         deliveryAddress: deliveryAddress.trim(),
         deliveryDetails: deliveryDetails ? deliveryDetails.trim() : null,
+        destinationLatitude: destinationLatitude ?? null,
+        destinationLongitude: destinationLongitude ?? null,
         paymentMethod,
         totalProductsAmount,
         deliveryFee,

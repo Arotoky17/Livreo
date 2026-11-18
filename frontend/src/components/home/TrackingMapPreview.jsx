@@ -1,9 +1,24 @@
+import { useState } from 'react';
 import { MapPin, Navigation, Truck } from 'lucide-react';
+import MapComponent from '../delivery/MapComponent.jsx';
 
-// Decorative map only: no real coordinates, delivery data, or network request.
 export default function TrackingMapPreview() {
+  const [satellite, setSatellite] = useState(false);
+
   return (
-    <div className="gps-map-modern" role="img" aria-label="Trajet de démonstration avec un départ, un livreur et une destination. Aucune position GPS réelle.">
+    <>
+      <div className="gps-preview-modes" role="group" aria-label="Fond de carte de l’aperçu">
+        <button type="button" aria-pressed={!satellite} onClick={() => setSatellite(false)}>Plan illustré</button>
+        <button type="button" aria-pressed={satellite} onClick={() => setSatellite(true)}>Satellite</button>
+      </div>
+      {satellite ? (
+        <div className="gps-map-modern gps-map-satellite" role="region" aria-label="Vue satellite d’Antananarivo sans position de livreur">
+          <div className="gps-satellite-canvas">
+            <MapComponent initialMode="satellite" showLayerToggle={false} height="100%" />
+          </div>
+        </div>
+      ) : (
+      <div className="gps-map-modern" role="img" aria-label="Trajet de démonstration avec un départ, un livreur et une destination. Aucune position GPS réelle.">
       <svg viewBox="0 0 600 400" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
         <defs>
           <pattern id="preview-blocks" width="90" height="75" patternUnits="userSpaceOnUse" patternTransform="rotate(-12)">
@@ -43,6 +58,8 @@ export default function TrackingMapPreview() {
       <span className="gps-compass" aria-hidden="true"><Navigation size={19} />N</span>
       <span className="gps-driver"><span className="gps-driver-avatar"><Truck size={20} /></span><span><strong>Livreur</strong><small>Position illustrative</small></span></span>
       <span className="gps-map-label"><MapPin size={15} />Carte illustrative · sans données GPS</span>
-    </div>
+      </div>
+      )}
+    </>
   );
 }

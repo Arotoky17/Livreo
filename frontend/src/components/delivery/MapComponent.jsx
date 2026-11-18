@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import L from 'leaflet';
 
 // Fix par défaut des icônes Leaflet
@@ -19,6 +19,14 @@ const driverIcon = L.divIcon({
   `,
   iconSize: [38, 38],
   iconAnchor: [19, 19],
+});
+
+const destinationIcon = L.divIcon({
+  className: 'custom-destination-pin',
+  html: '<svg viewBox="0 0 32 40" width="32" height="40" aria-hidden="true"><path fill="#b91c1c" stroke="white" stroke-width="2" d="M16 38C13 34 2 23 2 16a14 14 0 1 1 28 0c0 7-11 18-14 22Z"/><circle cx="16" cy="16" r="5" fill="white"/></svg>',
+  iconSize: [32, 40],
+  iconAnchor: [16, 38],
+  popupAnchor: [0, -30],
 });
 
 // Définition des calques (Rues standard vs Satellite HD Esri)
@@ -43,20 +51,19 @@ const TILE_LAYERS = {
 };
 
 export default function MapComponent({
-  markers = [], // Array de { lat, lng, title, details, isOutdated }
+  markers = [], // Array de { lat, lng, title, details, isOutdated, kind }
   center = [-18.9135, 47.5278], // Antananarivo par défaut
   zoom = 14,
   height = '400px',
-  showLayerToggle = true, // Permet d'activer/désactiver le bouton satellite
+  initialMode = 'streets',
+  showLayerToggle = true,
 }) {
   const mapContainerRef = useRef(null);
   const mapInstanceRef = useRef(null);
   const markersLayerRef = useRef(null);
-  const currentTileLayerRef = useRef(null);
-  const satelliteLabelsLayerRef = useRef(null);
   const initialViewRef = useRef({ center, zoom });
 
-  const [mapMode, setMapMode] = useState('streets'); // 'streets' | 'satellite'
+  const [mapMode, setMapMode] = useState(initialMode);
 
   // Initialisation de la carte
   useEffect(() => {
@@ -69,10 +76,6 @@ export default function MapComponent({
 
       // Repositionner le zoom en bas à droite
       L.control.zoom({ position: 'bottomright' }).addTo(map);
-
-      // Calque initial (Standard OSM)
-      const baseLayer = L.tileLayer(TILE_LAYERS.streets.url, TILE_LAYERS.streets.options).addTo(map);
-      currentTileLayerRef.current = baseLayer;
 
       markersLayerRef.current = L.layerGroup().addTo(map);
       mapInstanceRef.current = map;
@@ -92,37 +95,15 @@ export default function MapComponent({
 
   // Gestion du basculement entre Plan et Satellite
   useEffect(() => {
-    if (!mapInstanceRef.current) return;
-
-    // Suppression de l'ancien calque de tuiles
-    if (currentTileLayerRef.current) {
-      mapInstanceRef.current.removeLayer(currentTileLayerRef.current);
-    }
-    if (satelliteLabelsLayerRef.current) {
-      mapInstanceRef.current.removeLayer(satelliteLabelsLayerRef.current);
-      satelliteLabelsLayerRef.current = null;
-    }
-
-    if (mapMode === 'satellite') {
-      // 1. Calque Satellite Imagerie Esri
-      const satLayer = L.tileLayer(TILE_LAYERS.satellite.url, TILE_LAYERS.satellite.options).addTo(
-        mapInstanceRef.current
-      );
-      currentTileLayerRef.current = satLayer;
-
-      // 2. Calque transparent des noms de rues / frontières pour la lisibilité
-      const labels = L.tileLayer(TILE_LAYERS.satellite.labelsUrl, { maxZoom: 19 }).addTo(
-        mapInstanceRef.current
-      );
-      satelliteLabelsLayerRef.current = labels;
-    } else {
-      // Calque Standard OSM
-      const streetsLayer = L.tileLayer(TILE_LAYERS.streets.url, TILE_LAYERS.streets.options).addTo(
-        mapInstanceRef.current
-      );
-      currentTileLayerRef.current = streetsLayer;
-    }
-
+    const map = mapInstanceRef.current;
+    if (!map) return;
+    const { url, options, labelsUrl } = TILE_LAYERS[mapMode];
+    const base = L.tileLayer(url, options).addTo(map);
+    const labels = labelsUrl && L.tileLayer(labelsUrl, { maxZoom: options.maxZoom }).addTo(map);
+    return () => {
+      base.remove();
+      labels?.remove();
+    };
   }, [mapMode]);
 
   // Mise à jour dynamique des marqueurs
@@ -137,24 +118,27 @@ export default function MapComponent({
 
     markers.forEach((m) => {
       if (Number.isFinite(m.lat) && Number.isFinite(m.lng)) {
-        const marker = L.marker([m.lat, m.lng], { icon: driverIcon }).addTo(
+        const isDestination = m.kind === 'destination';
+        const marker = L.marker([m.lat, m.lng], { icon: isDestination ? destinationIcon : driverIcon, title: m.title }).addTo(
           markersLayerRef.current
         );
 
         const popupContent = document.createElement('div');
         popupContent.style.cssText = 'font-size:13px;line-height:1.4;min-width:180px';
         const title = document.createElement('strong');
-        title.textContent = m.title || 'Livreur en route';
+        title.textContent = m.title || (isDestination ? 'Destination' : 'Livreur en route');
         popupContent.append(title);
         if (m.details) {
           const details = document.createElement('p');
           details.textContent = m.details;
           popupContent.append(details);
         }
-        const freshness = document.createElement('div');
-        freshness.textContent = m.isOutdated ? 'Signal GPS ancien (> 3 min)' : 'Signal GPS récent';
-        freshness.style.cssText = `margin-top:6px;padding:3px 6px;border-radius:4px;font-size:11px;background:${m.isOutdated ? '#fef3c7' : '#dcfce7'};color:${m.isOutdated ? '#92400e' : '#166534'}`;
-        popupContent.append(freshness);
+        if (!isDestination) {
+          const freshness = document.createElement('div');
+          freshness.textContent = m.isOutdated ? 'Signal GPS ancien (> 3 min)' : 'Signal GPS récent';
+          freshness.style.cssText = `margin-top:6px;padding:3px 6px;border-radius:4px;font-size:11px;background:${m.isOutdated ? '#fef3c7' : '#dcfce7'};color:${m.isOutdated ? '#92400e' : '#166534'}`;
+          popupContent.append(freshness);
+        }
 
         marker.bindPopup(popupContent);
         bounds.push([m.lat, m.lng]);
@@ -164,17 +148,18 @@ export default function MapComponent({
     if (bounds.length === 1) {
       mapInstanceRef.current.setView(bounds[0], zoom);
     } else if (bounds.length > 1) {
-      mapInstanceRef.current.fitBounds(bounds, { padding: [50, 50] });
+      mapInstanceRef.current.fitBounds(bounds, { padding: [50, 50], maxZoom: zoom });
     }
   }, [markers, zoom]);
 
   return (
-    <div className="relative" style={{ height, width: '100%' }}>
+    <div className="relative isolate" style={{ height, width: '100%' }}>
       {/* Sélecteur de calque élégant (Plan vs Satellite) */}
       {showLayerToggle && (
-        <div className="absolute top-3 right-3 z-[1000] bg-white/95 backdrop-blur-sm p-1 rounded-xl shadow-lg border border-slate-200/80 flex items-center gap-1 text-xs font-semibold">
+        <div role="group" aria-label="Fond de carte" className="absolute top-3 right-3 z-[1000] bg-white/95 backdrop-blur-sm p-1 rounded-xl shadow-lg border border-slate-200/80 flex items-center gap-1 text-xs font-semibold">
           <button
             type="button"
+            aria-pressed={mapMode === 'streets'}
             onClick={() => setMapMode('streets')}
             className={`px-3 py-1.5 rounded-lg transition flex items-center gap-1.5 ${
               mapMode === 'streets'
@@ -182,11 +167,12 @@ export default function MapComponent({
                 : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
             }`}
           >
-            <span>🗺️</span>
+            <span aria-hidden="true">🗺️</span>
             <span>Plan</span>
           </button>
           <button
             type="button"
+            aria-pressed={mapMode === 'satellite'}
             onClick={() => setMapMode('satellite')}
             className={`px-3 py-1.5 rounded-lg transition flex items-center gap-1.5 ${
               mapMode === 'satellite'
@@ -194,7 +180,7 @@ export default function MapComponent({
                 : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
             }`}
           >
-            <span>🛰️</span>
+            <span aria-hidden="true">🛰️</span>
             <span>Satellite</span>
           </button>
         </div>

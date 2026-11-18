@@ -384,6 +384,40 @@
   height: 100%;
 }
 
+.gps-preview-modes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 0 18px 12px;
+}
+
+.gps-preview-modes button {
+  min-height: 36px;
+  padding: 6px 12px;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  background: #f3f7fd;
+  color: var(--ink);
+  font-size: 13px;
+  font-weight: 650;
+  cursor: pointer;
+}
+
+.gps-preview-modes button[aria-pressed="true"] {
+  border-color: var(--blue);
+  background: var(--blue);
+  color: white;
+}
+
+.gps-map-satellite {
+  min-height: 210px;
+}
+
+.gps-satellite-canvas {
+  position: absolute;
+  inset: 0;
+}
+
 .gps-map-caption,
 .gps-compass,
 .gps-driver,
