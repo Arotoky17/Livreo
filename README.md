@@ -92,7 +92,7 @@ npm.cmd test
 
 | Rôle | Email | Mot de passe |
 | --- | --- | --- |
-| Administrateur | admin@livreo.mg | Admin123! |
+| Administrateur | Adresse configurée via `SEED_ADMIN_EMAIL` | Mot de passe configuré via `SEED_ADMIN_PASSWORD` |
 | Vendeur | vendeur@livreo.mg | Vendeur123! |
 | Livreur | livreur@livreo.mg | Livreur123! |
 

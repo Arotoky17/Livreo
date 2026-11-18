@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { MapPin, ShieldCheck, Zap, PackageCheck, Truck, ArrowRight, Radio, MessageCircle, Phone } from 'lucide-react';
+import { MapPin, ShieldCheck, Zap, PackageCheck, Truck, ArrowRight, MessageCircle, Phone } from 'lucide-react';
 import Logo from '../../components/navigation/Logo.jsx';
 import TrackingMapPreview from '../../components/home/TrackingMapPreview.jsx';
 import { homeConfig } from '../../config/home.js';
@@ -68,9 +68,10 @@ export default function HomePage() {
 
       <section id="a-propos" className="landing-gps" aria-labelledby="gps-title">
         <div className="gps-copy">
-          <span className="landing-label"><Radio size={17} />Votre livraison, en toute clarté</span>
-          <h2 id="gps-title">Suivez votre livraison <span>en temps réel</span></h2>
-          <p>Grâce à Livreo, consultez l’état de votre commande et visualisez la position disponible de votre livreur directement sur une carte interactive.</p>
+          <h2 id="gps-title">À propos de <span>Livreo</span></h2>
+          <p>Livreo organise les livraisons de commandes en ligne à Madagascar. Les vendeurs centralisent leurs commandes et les clients peuvent suivre leur colis de la prise en charge à la livraison.</p>
+          <h3>Comment suivre votre colis ?</h3>
+          <p>Saisissez votre code de suivi pour consulter l’état de votre livraison et accéder à la carte.</p>
           <div className="gps-note"><ShieldCheck size={21} /><p>La position s’affiche uniquement lorsque le suivi GPS est actif et qu’une position récente est disponible.</p></div>
           <Link to="/tracking" className="landing-button">Suivre ma commande<ArrowRight size={18} /></Link>
         </div>
@@ -81,7 +82,7 @@ export default function HomePage() {
         </figure>
       </section>
 
-      <section id="contact" className="home-section home-direct-contact" aria-labelledby="contact-title"><div><span className="landing-label"><MessageCircle size={17} />Restons proches</span><h2 id="contact-title">Une question sur votre livraison ?</h2><p>Retrouvez nos contacts directs ici. En attendant leur publication, votre vendeur reste votre interlocuteur.</p><div className="home-contact-links"><ContactLink href={homeConfig.contacts.whatsapp} icon={MessageCircle}>WhatsApp</ContactLink><ContactLink href={homeConfig.contacts.messenger} icon={MessageCircle}>Messenger</ContactLink><ContactLink href={homeConfig.contacts.phone ? `tel:${homeConfig.contacts.phone}` : ''} icon={Phone}>Téléphone</ContactLink></div></div></section>
+      <section id="contact" className="home-section home-direct-contact" aria-labelledby="contact-title"><div><span className="landing-label"><MessageCircle size={17} />Restons proches</span><h2 id="contact-title">Une question sur votre livraison ?</h2><p>Contactez-nous par WhatsApp, par téléphone ou sur Facebook.</p><div className="home-contact-links"><ContactLink href={homeConfig.contacts.whatsapp} icon={MessageCircle}>WhatsApp · {homeConfig.contacts.phone}</ContactLink><ContactLink href={homeConfig.contacts.facebook} icon={MessageCircle}>Facebook · LIVREO</ContactLink><ContactLink href={homeConfig.contacts.phone ? `tel:${homeConfig.contacts.phone}` : ''} icon={Phone}>Téléphone · {homeConfig.contacts.phone}</ContactLink></div></div></section>
 
       <footer className="landing-footer">
 
@@ -89,7 +90,7 @@ export default function HomePage() {
           <div className="footer-brand"><Logo /><p>Vos commandes et vos livraisons réunies, pour rester plus proches partout à Madagascar.</p></div>
           <nav aria-label="Navigation du pied de page"><h2>Découvrir Livreo</h2><Link to="/">Accueil</Link><Link to="/tracking">Suivi de commande</Link><a href="#a-propos">À propos</a><a href="#contact">Contact</a></nav>
           <div className="footer-spaces"><h2>Gardons le lien</h2><p>Un colis à retrouver ou une course à préparer ?</p><Link className="footer-tracking-link" to="/tracking"><PackageCheck size={18} />Suivre mon colis<ArrowRight size={16} /></Link><Link to="/login">Connexion Livreo<ArrowRight size={15} /></Link></div>
-          <div className="footer-bottom"><span>© 2026 Livreo. Tous droits réservés.</span><Link to="/tracking">Une question sur votre colis ? Consultez votre suivi<ArrowRight size={14} /></Link></div>
+          <div className="footer-bottom"><span>La référence de la livraison sécurisée à Madagascar</span><Link to="/tracking">Une question sur votre colis ? Consultez votre suivi<ArrowRight size={14} /></Link></div>
         </div>
       </footer>
     </div>

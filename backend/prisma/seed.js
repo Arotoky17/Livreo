@@ -8,21 +8,23 @@ async function main() {
 
   // 1. Création des Utilisateurs
   const salt = await bcrypt.genSalt(10);
-  const adminPassword = await bcrypt.hash('Admin123!', salt);
   const sellerPassword = await bcrypt.hash('Vendeur123!', salt);
 
-  await prisma.user.upsert({
-    where: { email: 'admin@livreo.mg' },
-    update: {},
-    create: {
-      nom: 'Administrateur Livreo',
-      email: 'admin@livreo.mg',
-      password: adminPassword,
-      telephone: '+261 34 00 000 01',
-      role: Role.ADMIN,
-      isActive: true,
-    },
-  });
+  const adminEmail = process.env.SEED_ADMIN_EMAIL?.trim().toLowerCase();
+  const adminPassword = process.env.SEED_ADMIN_PASSWORD;
+  if (adminEmail && adminPassword) {
+    await prisma.user.upsert({
+      where: { email: adminEmail },
+      update: {},
+      create: {
+        nom: 'Administrateur Livreo',
+        email: adminEmail,
+        password: await bcrypt.hash(adminPassword, salt),
+        role: Role.ADMIN,
+        isActive: true,
+      },
+    });
+  }
 
   await prisma.user.upsert({
     where: { email: 'vendeur@livreo.mg' },
@@ -37,7 +39,7 @@ async function main() {
     },
   });
 
-  console.log('✓ Comptes administrateur et vendeur initialisés');
+  console.log('✓ Initialisation des comptes terminée');
 
   // 2. Création des Zones d'Antananarivo
   await prisma.zone.upsert({
