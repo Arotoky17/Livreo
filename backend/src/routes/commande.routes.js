@@ -4,8 +4,8 @@ import {
   getOrders,
   getOrderById,
   validateOrder,
-} from '../controllers/order.controller.js';
-import { importOrders } from '../controllers/orderImport.controller.js';
+} from '../controllers/commande.controleur.js';
+import { importOrders } from '../controllers/importCommandes.controleur.js';
 import { authenticate } from '../middlewares/auth.middleware.js';
 import { authorize } from '../middlewares/role.middleware.js';
 

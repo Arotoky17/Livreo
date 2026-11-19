@@ -1,8 +1,8 @@
 import { Router } from 'express';
-import { getUsers, createUser, toggleUserStatus } from '../controllers/user.controller.js';
+import { getUsers, createUser, toggleUserStatus } from '../controllers/utilisateur.controleur.js';
 import { authenticate } from '../middlewares/auth.middleware.js';
 import { authorize } from '../middlewares/role.middleware.js';
-import { getMyPhoto, updateMyPhoto, deleteMyPhoto } from '../controllers/profilePhoto.controller.js';
+import { getMyPhoto, updateMyPhoto, deleteMyPhoto } from '../controllers/photoProfil.controleur.js';
 
 const router = Router();
 

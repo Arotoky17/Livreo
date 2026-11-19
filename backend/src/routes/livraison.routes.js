@@ -6,7 +6,7 @@ import {
   updateDeliveryStatus,
   recordLocation,
   getLiveDeliveriesForMap,
-} from '../controllers/delivery.controller.js';
+} from '../controllers/livraison.controleur.js';
 import { authenticate } from '../middlewares/auth.middleware.js';
 import { authorize } from '../middlewares/role.middleware.js';
 

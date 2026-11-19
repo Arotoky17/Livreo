@@ -1,11 +1,11 @@
 import { Router } from 'express';
-import authRoutes from './auth.routes.js';
-import userRoutes from './user.routes.js';
+import authRoutes from './authentification.routes.js';
+import userRoutes from './utilisateur.routes.js';
 import zoneRoutes from './zone.routes.js';
-import orderRoutes from './order.routes.js';
-import deliveryRoutes from './delivery.routes.js';
-import trackingRoutes from './tracking.routes.js';
-import statsRoutes from './stats.routes.js';
+import orderRoutes from './commande.routes.js';
+import deliveryRoutes from './livraison.routes.js';
+import trackingRoutes from './suivi.routes.js';
+import statsRoutes from './statistiques.routes.js';
 
 const router = Router();
 

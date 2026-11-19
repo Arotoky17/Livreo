@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { getZones, createZone } from '../controllers/zone.controller.js';
+import { getZones, createZone } from '../controllers/zone.controleur.js';
 import { authenticate } from '../middlewares/auth.middleware.js';
 import { authorize } from '../middlewares/role.middleware.js';
 

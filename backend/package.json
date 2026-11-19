@@ -10,6 +10,7 @@
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
     "prisma:seed": "node prisma/seed.js",
+    "admin:create": "node prisma/creer-admin.js",
     "prisma:studio": "prisma studio",
     "test": "node --test tests/profilePhoto.service.test.js"
   },

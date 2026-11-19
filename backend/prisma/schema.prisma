@@ -1,6 +1,7 @@
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
 generator client {
@@ -44,7 +45,7 @@ model User {
   deliveries      Delivery[]      @relation("DeliveryPersonDeliveries")
   statusHistories StatusHistory[] @relation("ChangedByUser")
 
-  @@map("users")
+  @@map("utilisateurs")
 }
 
 model Zone {
@@ -85,7 +86,7 @@ model Order {
   items               OrderItem[]
   delivery            Delivery?
 
-  @@map("orders")
+  @@map("commandes")
 }
 
 model OrderItem {
@@ -97,7 +98,7 @@ model OrderItem {
   unitPrice   Float
   totalPrice  Float
 
-  @@map("order_items")
+  @@map("articles_commande")
 }
 
 model Delivery {
@@ -121,7 +122,7 @@ model Delivery {
   gpsLogs          GpsLog[]
   statusHistories  StatusHistory[]
 
-  @@map("deliveries")
+  @@map("livraisons")
 }
 
 model GpsLog {
@@ -136,7 +137,7 @@ model GpsLog {
   recordedAt DateTime @default(now())
 
   @@index([deliveryId, recordedAt])
-  @@map("gps_logs")
+  @@map("journaux_gps")
 }
 
 model StatusHistory {
@@ -150,5 +151,5 @@ model StatusHistory {
   createdAt   DateTime    @default(now())
 
   @@index([deliveryId, createdAt])
-  @@map("status_histories")
+  @@map("historiques_statuts")
 }

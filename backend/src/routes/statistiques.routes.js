@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { getDashboardStats } from '../controllers/stats.controller.js';
+import { getDashboardStats } from '../controllers/statistiques.controleur.js';
 import { authenticate } from '../middlewares/auth.middleware.js';
 import { authorize } from '../middlewares/role.middleware.js';
 
