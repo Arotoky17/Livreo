@@ -9,6 +9,7 @@ import {
 } from '../controllers/livraison.controleur.js';
 import { authenticate } from '../middlewares/auth.middleware.js';
 import { authorize } from '../middlewares/role.middleware.js';
+import { organiseDeliveries } from '../controllers/tournee.controleur.js';
 
 const router = Router();
 
@@ -23,6 +24,7 @@ router.get('/:id', authorize('ADMIN', 'DELIVERY'), getDeliveryById);
 
 // Affectation de livreur (Admin uniquement)
 router.patch('/:id/assign', authorize('ADMIN'), assignDelivery);
+router.patch('/organisation', authorize('ADMIN'), organiseDeliveries);
 
 // Mise à jour de statut (Livreur pour ses courses ou Admin)
 router.patch('/:id/status', authorize('ADMIN', 'DELIVERY'), updateDeliveryStatus);

@@ -82,6 +82,7 @@ CREATE TABLE "livraisons" (
     "sellerPayout" DOUBLE PRECISION,
     "notes" TEXT,
     "assignedAt" TIMESTAMP(3),
+    "routePosition" INTEGER,
     "startedAt" TIMESTAMP(3),
     "completedAt" TIMESTAMP(3),
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,

@@ -6,7 +6,7 @@ import {
   Home,
   Search,
   Info,
-  Phone,
+  ContactRound,
   ShieldCheck,
   LogOut,
   Truck,
@@ -96,7 +96,7 @@ export default function Navbar() {
             }}
             className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-medium text-slate-600 hover:text-blue-600 hover:bg-white/60 transition"
           >
-            <Phone className="w-3.5 h-3.5" />
+            <ContactRound className="w-3.5 h-3.5" aria-hidden="true" />
             Contact
           </a>
         </nav>

@@ -34,7 +34,9 @@ export const getDeliveries = async (req, res, next) => {
           take: 1, // Dernière position connue
         },
       },
-      orderBy: { createdAt: 'desc' },
+      orderBy: req.user.role === 'DELIVERY'
+        ? [{ routePosition: 'asc' }, { assignedAt: 'asc' }, { id: 'asc' }]
+        : { createdAt: 'desc' },
     });
 
     res.status(200).json({
@@ -132,13 +134,18 @@ export const assignDelivery = async (req, res, next) => {
       });
     }
 
+    if (!['VALIDEE', 'AFFECTEE', 'REPROGRAMMEE'].includes(delivery.status)) {
+      return res.status(409).json({ success: false, message: 'Cette course ne peut plus être affectée.' });
+    }
+
     const updated = await prisma.$transaction([
       prisma.delivery.update({
-        where: { id },
+        where: { id, status: delivery.status, deliveryPersonId: delivery.deliveryPersonId },
         data: {
           deliveryPersonId,
           status: 'AFFECTEE',
           assignedAt: new Date(),
+          routePosition: deliveryPersonId === delivery.deliveryPersonId ? delivery.routePosition : null,
           notes: notes ? notes.trim() : delivery.notes,
         },
       }),
@@ -226,7 +233,7 @@ export const updateDeliveryStatus = async (req, res, next) => {
 
     const [updatedDelivery] = await prisma.$transaction([
       prisma.delivery.update({
-        where: { id },
+        where: { id, status: delivery.status, deliveryPersonId: delivery.deliveryPersonId },
         data: updateData,
         include: {
           deliveryPerson: { select: { id: true, nom: true, telephone: true } },

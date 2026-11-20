@@ -114,6 +114,7 @@ model Delivery {
   sellerPayout     Float?
   notes            String?
   assignedAt       DateTime?
+  routePosition    Int?
   startedAt        DateTime?
   completedAt      DateTime?
   createdAt        DateTime        @default(now())
