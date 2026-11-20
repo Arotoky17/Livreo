@@ -2,6 +2,7 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 import api from '../services/api.js';
 
 const AuthContext = createContext(null);
+const loginRoles = ['ADMIN', 'DELIVERY', 'SELLER'];
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(() => {
@@ -17,7 +18,11 @@ export const AuthProvider = ({ children }) => {
       if (storedToken) {
         try {
           const res = await api.get('/auth/me');
-          if (!['ADMIN', 'DELIVERY'].includes(res.data.user.role)) { logout(); return; }
+          if (!loginRoles.includes(res.data.user.role)) {
+            logout();
+            setLoading(false);
+            return;
+          }
           setUser(res.data.user);
           localStorage.setItem('livreo_user', JSON.stringify(res.data.user));
         } catch (error) {
@@ -35,7 +40,7 @@ export const AuthProvider = ({ children }) => {
     const res = await api.post('/auth/login', { email, password });
     const { token: receivedToken, user: receivedUser } = res.data;
 
-    if (!['ADMIN', 'DELIVERY'].includes(receivedUser.role)) {
+    if (!loginRoles.includes(receivedUser.role)) {
       throw new Error('Cet espace de connexion est indisponible.');
     }
 

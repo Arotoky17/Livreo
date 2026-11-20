@@ -10,12 +10,13 @@ import {
   ShieldCheck,
   LogOut,
   Truck,
+  ShoppingCart,
   Menu,
   X,
 } from 'lucide-react';
 
 export default function Navbar() {
-  const { user, logout, isAdmin, isDelivery } = useAuth();
+  const { user, logout, isAdmin, isDelivery, isSeller } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
   const [menuOpen, setMenuOpen] = useState(false);
@@ -27,7 +28,7 @@ export default function Navbar() {
     navigate('/');
   };
 
-  if (['/admin', '/delivery', '/login'].includes(location.pathname)) return null;
+  if (['/admin', '/delivery', '/seller', '/login'].includes(location.pathname)) return null;
 
   return (
     <header className={`${isHome ? 'landing-header' : 'sticky top-0 bg-white/95 backdrop-blur-md border-b border-slate-100'} z-40`}
@@ -113,6 +114,16 @@ export default function Navbar() {
                 >
                   <Truck className="w-3.5 h-3.5" />
                   Espace Livreur
+                </Link>
+              )}
+
+              {isSeller && (
+                <Link
+                  to="/seller"
+                  className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-blue-50 text-blue-700 text-xs font-semibold hover:bg-blue-100 transition border border-blue-200"
+                >
+                  <ShoppingCart className="w-3.5 h-3.5" />
+                  Espace vendeur
                 </Link>
               )}
 

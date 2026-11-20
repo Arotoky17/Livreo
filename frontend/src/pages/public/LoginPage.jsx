@@ -8,6 +8,7 @@ import '../../styles/LoginPage.css';
 const destinationByRole = {
   ADMIN: '/admin',
   DELIVERY: '/delivery',
+  SELLER: '/seller',
 };
 
 export default function LoginPage() {

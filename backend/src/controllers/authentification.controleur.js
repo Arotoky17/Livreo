@@ -41,10 +41,6 @@ export const login = async (req, res, next) => {
       });
     }
 
-    if (!['ADMIN', 'DELIVERY'].includes(user.role)) {
-      return res.status(403).json({ success: false, message: 'La connexion est r?serv?e aux administrateurs et aux livreurs.' });
-    }
-
     // Génération du token JWT
     const token = jwt.sign(
       {

@@ -7,6 +7,7 @@ import PublicTrackingPage from './pages/public/PublicTrackingPage.jsx';
 import LoginPage from './pages/public/LoginPage.jsx';
 import AdminDashboard from './pages/admin/AdminDashboard.jsx';
 import DeliveryDriverPage from './pages/delivery/DeliveryDriverPage.jsx';
+import SellerOrdersPage from './pages/seller/SellerOrdersPage.jsx';
 
 // Route gardée par rôle
 const ProtectedRoute = ({ children, allowedRoles }) => {
@@ -66,6 +67,14 @@ export default function App() {
                 }
               />
 
+              <Route
+                path="/seller"
+                element={
+                  <ProtectedRoute allowedRoles={['SELLER']}>
+                    <SellerOrdersPage />
+                  </ProtectedRoute>
+                }
+              />
               <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
           </main>
