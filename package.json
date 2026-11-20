@@ -8,5 +8,8 @@
     "build": "npm --prefix frontend run build",
     "lint": "npm --prefix frontend run lint",
     "test": "node --test frontend/tests/adminMetrics.test.js frontend/tests/deliveryRules.test.js backend/tests/profilePhoto.service.test.js"
+  },
+  "devDependencies": {
+    "@prisma/prisma7": "^7.10.1"
   }
 }
