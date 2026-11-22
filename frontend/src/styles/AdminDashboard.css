@@ -175,3 +175,5 @@
   .sidebar-collapsed .adm-sidebar { transform: translateX(-100%); }
   .sidebar-collapsed .adm-workspace { margin-left: 0; }
 }
+
+.adm-section-nav { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }

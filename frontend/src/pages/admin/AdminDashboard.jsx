@@ -2,12 +2,10 @@ import { Badge, Empty, Panel, Dialog } from '../../components/ui/PortalUI.jsx';
 import ActivityChart from '../../components/ui/ActivityChart.jsx';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
-import { LayoutDashboard, ShoppingCart, Truck, Store, MapPin, Wallet, Banknote, Bell, LogOut, Menu, Search, ChevronDown, CalendarDays, CheckCircle2, ArrowRight, Eye, Plus, X, RefreshCw, AlertCircle, Route, ShieldCheck, BarChart3, ChevronLeft, ChevronRight, CircleHelp, FileUp } from 'lucide-react';
+import { LayoutDashboard, ShoppingCart, Truck, Store, MapPin, Wallet, Banknote, Bell, LogOut, Menu, Search, ChevronDown, CalendarDays, CheckCircle2, ArrowRight, Eye, Plus, X, RefreshCw, AlertCircle, Route, ShieldCheck, BarChart3, ChevronLeft, ChevronRight, CircleHelp } from 'lucide-react';
 import api from '../../services/api.js';
 import Logo from '../../components/navigation/Logo.jsx';
 import MapComponent from '../../components/delivery/MapComponent.jsx';
-import OrderWizard from '../seller/OrderWizard.jsx';
-import OrderImport from './OrderImport.jsx';
 import DeliveryOrganisation from './DeliveryOrganisation.jsx';
 import { useAuth } from '../../context/AuthContext.jsx';
 import { money, dateTime, statusLabels, matches, dailyActivity, sellerBalances } from '../../utils/adminMetrics.js';
@@ -15,12 +13,18 @@ import '../../styles/AdminDashboard.css';
 
 const navigation = [
   ['dashboard', 'Tableau de bord', LayoutDashboard], ['orders', 'Commandes', ShoppingCart],
-  ['new-order', 'Nouvelle commande', Plus],
-  ['import-orders', 'Importer des commandes', FileUp],
   ['dispatch', 'Organisation des livraisons', Route], ['delivery-list', 'Historique des livraisons', Truck], ['drivers', 'Livreurs', Truck], ['sellers', 'Vendeurs', Store],
   ['map', 'Carte GPS', MapPin], ['zones', 'Zones & tarifs', MapPin], ['collections', 'Encaissements', Wallet],
   ['payouts', 'Reversements', Banknote], ['activity', 'Activité récente', Bell],
 ];
+const navigationGroups = [
+  ['dispatch', 'Livraisons', ['dispatch', 'delivery-list', 'map']],
+  ['drivers', 'Comptes', ['drivers', 'sellers']],
+  ['collections', 'Finances', ['collections', 'payouts']],
+];
+const sidebar = ['dashboard', 'orders', 'dispatch', 'drivers', 'collections', 'zones'];
+const sectionLabels = { dispatch: 'Organisation', 'delivery-list': 'Historique', map: 'Carte GPS' };
+
 const resources = [
   ['stats', '/stats', 'stats', 'indicateurs'], ['orders', '/orders', 'orders', 'commandes'],
   ['deliveries', '/deliveries', 'deliveries', 'livraisons'], ['live', '/deliveries/live-map', 'deliveries', 'positions GPS'],
@@ -90,7 +94,6 @@ export default function AdminDashboard() {
   }
   const orders = data.orders ?? [], deliveries = data.deliveries ?? [], users = data.users ?? [], zones = data.zones ?? [];
   const activeDrivers = users.filter((account) => account.role === 'DELIVERY' && account.isActive);
-  const activeSellers = users.filter((account) => account.role === 'SELLER' && account.isActive);
   const pending = orders.filter((order) => order.status === 'EN_ATTENTE').length;
   const now = updatedAt?.getTime() ?? 0;
   const buckets = dailyActivity(orders, deliveries, days, now), recentBuckets = dailyActivity(orders, deliveries, 7, now);
@@ -109,6 +112,7 @@ export default function AdminDashboard() {
   const filteredDeliveries = deliveries.filter((delivery) => (!status || delivery.status === status) && matches(query, delivery.trackingCode, delivery.order?.customerName, delivery.deliveryPerson?.nom, delivery.order?.deliveryAddress));
   const personRole = section === 'drivers' ? 'DELIVERY' : 'SELLER';
   const filteredUsers = users.filter((account) => account.role === personRole && matches(query, account.nom, account.email, account.telephone));
+  const group = navigationGroups.find(([, , sections]) => sections.includes(section));
   const heading = navigation.find(([key]) => key === section)?.[1];
   const firstName = user?.nom?.split(' ')[0] ?? 'Admin';
   function orderTable(rows, preview = false) {
@@ -126,7 +130,11 @@ export default function AdminDashboard() {
       {sidebarOpen && <button className="adm-sidebar-overlay" onClick={() => setSidebarOpen(false)} aria-label="Fermer le menu" />}
       <aside className={`adm-sidebar ${sidebarOpen ? 'is-open' : ''}`} aria-label="Navigation administrateur">
         <div className="adm-brand"><Logo /><span>Livraison · Suivi · Confiance</span></div>
-        <nav>{navigation.map(([key, label, Icon]) => <button key={key} className={section === key ? 'active' : ''} onClick={() => go(key)} aria-current={section === key ? 'page' : undefined}><Icon size={18} /><span>{label}</span>{key === 'orders' && pending > 0 && <b>{pending}</b>}</button>)}</nav>
+        <nav>{sidebar.map((key) => navigation.find(([entry]) => entry === key)).map(([key, label, Icon]) => {
+          const active = (group?.[0] ?? section) === key;
+          const groupLabel = navigationGroups.find(([first]) => first === key)?.[1];
+          return <button key={key} className={active ? 'active' : ''} onClick={() => go(key)} aria-current={active ? (groupLabel ? 'true' : 'page') : undefined}><Icon size={18} /><span>{groupLabel ?? label}</span>{key === 'orders' && pending > 0 && <b>{pending}</b>}</button>;
+        })}</nav>
         <button className="adm-logout" onClick={() => { logout(); navigate('/login'); }}><LogOut size={18} />Déconnexion</button>
         <div className="adm-sidebar-footer"><ShieldCheck size={26} /><strong>Administrateur</strong><span>Gestion des livraisons Livreo</span><div className="adm-city" aria-hidden="true">▂ ▃ ▆ ▄ ▂ ▅ ▃ ▆ ▂</div></div>
         <Link className="adm-back-home" to="/">Retour à l’accueil<ArrowRight size={14} /></Link>
@@ -136,31 +144,11 @@ export default function AdminDashboard() {
         <main className="adm-main">
           <div className="adm-page-heading"><div><span className="adm-eyebrow">ESPACE ADMINISTRATION</span><h1>{section === 'dashboard' ? <><span className="adm-wave" aria-hidden="true">👋</span>Bonjour {firstName} !</> : heading}</h1><p>{section === 'dashboard' ? 'Voici un aperçu de votre activité.' : 'Organisez et suivez vos livraisons au même endroit.'}</p></div><div className="adm-heading-actions"><span className="adm-date"><CalendarDays size={16} />{updatedAt ? new Intl.DateTimeFormat('fr-FR', { timeZone: 'Indian/Antananarivo', day: 'numeric', month: 'long', year: 'numeric' }).format(updatedAt) : 'Chargement…'}</span><button className="adm-icon-button" disabled={loading || busy} onClick={refresh} aria-label="Actualiser les données"><RefreshCw className={loading ? 'adm-spinning' : ''} size={18} /></button></div></div>
           {loading && !updatedAt && <p className="adm-feedback" role="status">Chargement des données Livreo…</p>}
+          {group && <nav className="adm-section-nav" aria-label={group[1]}>
+            {group[2].map((key) => <button type="button" key={key} className={key === section ? 'adm-primary-button' : 'adm-secondary-button'} aria-current={key === section ? 'page' : undefined} onClick={() => go(key)}>{sectionLabels[key] ?? navigation.find(([entry]) => entry === key)[1]}</button>)}
+          </nav>}
           {failures.length > 0 && <div className="adm-feedback error" role="alert"><AlertCircle size={18} /><span>Chargement impossible : {failures.join(', ')}. Les dernières données disponibles sont conservées.</span><button onClick={refresh} disabled={loading}>Réessayer</button></div>}
           {notice && <div className={`adm-feedback ${notice.type}`} role="status">{notice.type === 'success' ? <CheckCircle2 size={18} /> : <AlertCircle size={18} />}<span>{notice.text}</span><button className="adm-icon-button" onClick={() => setNotice(null)} aria-label="Fermer le message"><X size={15} /></button></div>}
-          {section === 'new-order' && activeSellers.length > 0 && (
-            <OrderWizard zones={zones.filter((zone) => zone.isActive)} sellers={activeSellers} isAdmin
-              onCancel={() => go('orders')}
-              onCreated={() => {
-                setNotice({ type: 'success', text: 'Commande enregistrée. Elle apparaît dans les commandes à valider.' });
-                go('orders');
-                void loadData();
-              }} />
-          )}
-          {section === 'new-order' && data.users && activeSellers.length === 0 && (
-            <Panel title="Vendeur requis" icon={Store}
-              action={<button type="button" className="adm-primary-button" onClick={() => go('sellers')}>Ouvrir les vendeurs</button>}>
-              <Empty>Ajoutez ou activez un vendeur avant de créer une commande.</Empty>
-            </Panel>
-          )}
-          {section === 'import-orders' && (
-            <OrderImport sellers={activeSellers} zones={zones.filter((zone) => zone.isActive)}
-              onImported={({ created, skipped }) => {
-                setNotice({ type: 'success', text: `${created.length} commande(s) créée(s) et validée(s). ${skipped} doublon(s) ignoré(s).` });
-                go('dispatch');
-                void loadData();
-              }} />
-          )}
           {section === 'dashboard' && <>
             <div className="adm-metrics">{[
               { title: 'Total commandes', value: data.stats?.totalOrders, caption: `${pending} en attente de validation`, icon: ShoppingCart, tone: 'blue', field: 'orders', color: '#0860f5' },
@@ -170,7 +158,7 @@ export default function AdminDashboard() {
             ].map(({ title, value, caption, icon: Icon, tone, field, color }) => <section className={`adm-metric tone-${tone}`} key={title}><span className="adm-metric-icon"><Icon size={25} /></span><div><h2>{title}</h2><strong>{value ?? '—'}</strong><p>{caption}</p></div>{data.orders && data.deliveries && <ActivityChart compact buckets={recentBuckets} field={field} color={color} chartId={`spark-${tone}`} />}</section>)}</div>
             <div className="adm-dashboard-grid"><Panel title="Évolution des commandes" icon={BarChart3} action={<div className="adm-periods">{[7, 30, 90].map((period) => <button key={period} className={days === period ? 'active' : ''} onClick={() => setDays(period)} aria-pressed={days === period}>{period}j</button>)}</div>}><div className="adm-chart-legend"><span><i />Commandes</span><span><i />Livraisons terminées</span></div>{data.orders && data.deliveries ? <ActivityChart buckets={buckets} /> : <Empty>Les données du graphique ne sont pas disponibles.</Empty>}</Panel>{mapPanel()}<Panel title="Dernières commandes" icon={ShoppingCart} className="adm-recent-orders" action={<button className="adm-text-button" onClick={() => go('orders')}>Voir tout<ArrowRight size={14} /></button>}>{orderTable(filteredOrders.slice(0, 5), true)}</Panel><Panel title="Activité récente" icon={Bell} action={<button className="adm-text-button" onClick={() => go('activity')}>Voir tout<ArrowRight size={14} /></button>}>{activityList()}</Panel></div>
           </>}
-          {section === 'orders' && <Panel title="Gestion des commandes" icon={ShoppingCart} action={<button type="button" className="adm-primary-button" onClick={() => go('new-order')}><Plus size={16} />Nouvelle commande</button>}><div className="adm-toolbar"><label>Statut<select value={status} onChange={(event) => { setStatus(event.target.value); setPage(1); }}><option value="">Tous les statuts</option>{Object.entries(statusLabels).map(([key, label]) => <option key={key} value={key}>{label}</option>)}</select></label><button className="adm-secondary-button" onClick={() => go('dispatch')}><Route size={16} />Affecter les livraisons</button></div>{orderTable(filteredOrders.slice((page - 1) * pageSize, page * pageSize))}<div className="adm-pagination"><span>{filteredOrders.length} résultat(s) · Page {page} sur {Math.max(1, Math.ceil(filteredOrders.length / pageSize))}</span><button className="adm-icon-button" disabled={page <= 1} onClick={() => setPage(page - 1)} aria-label="Page précédente"><ChevronLeft size={18} /></button><button className="adm-icon-button" disabled={page * pageSize >= filteredOrders.length} onClick={() => setPage(page + 1)} aria-label="Page suivante"><ChevronRight size={18} /></button></div></Panel>}
+          {section === 'orders' && <Panel title="Gestion des commandes" icon={ShoppingCart}><div className="adm-toolbar"><label>Statut<select value={status} onChange={(event) => { setStatus(event.target.value); setPage(1); }}><option value="">Tous les statuts</option>{Object.entries(statusLabels).map(([key, label]) => <option key={key} value={key}>{label}</option>)}</select></label><button className="adm-secondary-button" onClick={() => go('dispatch')}><Route size={16} />Affecter les livraisons</button></div>{orderTable(filteredOrders.slice((page - 1) * pageSize, page * pageSize))}<div className="adm-pagination"><span>{filteredOrders.length} résultat(s) · Page {page} sur {Math.max(1, Math.ceil(filteredOrders.length / pageSize))}</span><button className="adm-icon-button" disabled={page <= 1} onClick={() => setPage(page - 1)} aria-label="Page précédente"><ChevronLeft size={18} /></button><button className="adm-icon-button" disabled={page * pageSize >= filteredOrders.length} onClick={() => setPage(page + 1)} aria-label="Page suivante"><ChevronRight size={18} /></button></div></Panel>}
           {section === 'dispatch' && data.deliveries && data.users && <DeliveryOrganisation
             deliveries={deliveries} drivers={activeDrivers} query={query} now={now} busy={busy}
             onAction={(payload, message) => mutate(() => api.patch('/deliveries/organisation', payload), message, false)}

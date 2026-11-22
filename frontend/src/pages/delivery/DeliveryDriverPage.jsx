@@ -75,7 +75,7 @@ export default function DeliveryDriverPage() {
         action={location && showPosition && <span className="adm-muted">{dateTime(location.recordedAt)}</span>}>
         <div className="portal-map">
           <MapComponent markers={mapMarkers} height={full ? '460px' : '280px'} />
-          {order && <p><strong>Destination</strong> · {order.deliveryAddress}{!hasDestination && ' · Coordonnées GPS non renseignées'}</p>}
+          {order && <p><strong>Destination</strong> · {order.deliveryAddress}</p>}
           {showPosition && !markers.length && <p>La position du livreur s’affiche après réception du GPS pendant une course active.</p>}
         </div>
       </Panel>

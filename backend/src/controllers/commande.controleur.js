@@ -9,31 +9,17 @@ export const createOrder = async (req, res, next) => {
       customerPhone,
       deliveryAddress,
       deliveryDetails,
-      destinationLatitude,
-      destinationLongitude,
       paymentMethod = 'CASH_ON_DELIVERY',
       items,
       notes,
     } = req.body;
 
-    // Détermination du vendeur : l'utilisateur connecté s'il est vendeur, sinon spécifié si admin
-    const sellerId = req.user.role === 'SELLER' ? req.user.id : req.body.sellerId || req.user.id;
+    const sellerId = req.user.id;
 
     if (!zoneId || !customerName || !customerPhone || !deliveryAddress) {
       return res.status(400).json({
         success: false,
         message: 'La zone, le nom du client, le téléphone et l’adresse sont obligatoires.',
-      });
-    }
-
-    const hasDestination = destinationLatitude != null || destinationLongitude != null;
-    if (hasDestination && (
-      !Number.isFinite(destinationLatitude) || Math.abs(destinationLatitude) > 90 ||
-      !Number.isFinite(destinationLongitude) || Math.abs(destinationLongitude) > 180
-    )) {
-      return res.status(400).json({
-        success: false,
-        message: 'Indiquez une latitude entre -90 et 90 et une longitude entre -180 et 180.',
       });
     }
 
@@ -46,10 +32,10 @@ export const createOrder = async (req, res, next) => {
 
     // Récupération de la zone et de ses frais
     const zone = await prisma.zone.findUnique({ where: { id: zoneId } });
-    if (!zone) {
+    if (!zone?.isActive) {
       return res.status(404).json({
         success: false,
-        message: 'Zone de livraison sélectionnée introuvable.',
+        message: 'Zone de livraison introuvable ou inactive.',
       });
     }
 
@@ -72,6 +58,7 @@ export const createOrder = async (req, res, next) => {
     const deliveryFee = zone.fraisLivraison;
     const totalAmount = totalProductsAmount + deliveryFee;
 
+    const trackingCode = await generateUniqueTrackingCode();
     const order = await prisma.order.create({
       data: {
         sellerId,
@@ -80,19 +67,31 @@ export const createOrder = async (req, res, next) => {
         customerPhone: customerPhone.trim(),
         deliveryAddress: deliveryAddress.trim(),
         deliveryDetails: deliveryDetails ? deliveryDetails.trim() : null,
-        destinationLatitude: destinationLatitude ?? null,
-        destinationLongitude: destinationLongitude ?? null,
         paymentMethod,
         totalProductsAmount,
         deliveryFee,
         totalAmount,
-        status: 'EN_ATTENTE',
+        status: 'VALIDEE',
+        delivery: {
+          create: {
+            trackingCode,
+            status: 'VALIDEE',
+            statusHistories: {
+              create: {
+                status: 'VALIDEE',
+                comment: 'Vente enregistrée, livraison prête à être affectée',
+                changedById: sellerId,
+              },
+            },
+          },
+        },
         notes: notes ? notes.trim() : null,
         items: {
           create: formattedItems,
         },
       },
       include: {
+        delivery: true,
         items: true,
         zone: true,
         seller: {
@@ -103,7 +102,7 @@ export const createOrder = async (req, res, next) => {
 
     res.status(201).json({
       success: true,
-      message: 'Commande enregistrée avec succès. En attente de validation.',
+      message: 'Vente enregistrée. Livraison prête à être affectée.',
       order,
     });
   } catch (error) {

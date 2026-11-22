@@ -6,7 +6,7 @@ import { normalizeOrderItems } from '../../utils/deliveryRules.js';
 import { importNumber, matchingId, parsePastedOrders, paymentValue, readOrderFile } from '../../utils/orderImport.js';
 
 const example = 'Client : Client test\nTéléphone : 0340000000\nAdresse : Analakely\nArticle : T-shirt | 2 | 15000';
-const template = 'Référence;Client;Téléphone;Adresse;Article;Quantité;Prix;Zone;Vendeur;Paiement\r\n';
+const template = 'Référence;Client;Téléphone;Adresse;Article;Quantité;Prix;Zone;Paiement\r\n';
 const fields = [
   ['reference', 'Référence'],
   ['customerName', 'Client'],
@@ -17,7 +17,7 @@ const fields = [
 ];
 const itemFields = [['productName', 'Article'], ['quantity', 'Quantité'], ['unitPrice', 'Prix unitaire (Ar)']];
 
-export default function OrderImport({ sellers, zones, onImported }) {
+export default function OrderImport({ zones, onImported }) {
   const [source, setSource] = useState('');
   const [orders, setOrders] = useState([]);
   const [duplicates, setDuplicates] = useState(null);
@@ -31,7 +31,6 @@ export default function OrderImport({ sellers, zones, onImported }) {
       ...order,
       id,
       zoneId: order.zoneName ? matchingId(order.zoneName, zones) : zones.length === 1 ? zones[0].id : '',
-      sellerId: order.sellerName ? matchingId(order.sellerName, sellers) : sellers.length === 1 ? sellers[0].id : '',
       paymentMethod: paymentValue(order.payment),
     })));
     setDuplicates(null);
@@ -79,12 +78,12 @@ export default function OrderImport({ sellers, zones, onImported }) {
             ...item, quantity: importNumber(item.quantity), unitPrice: importNumber(item.unitPrice),
           })));
           if (!order.customerName?.trim() || !order.customerPhone?.trim() || !order.deliveryAddress?.trim() ||
-              !order.zoneId || !order.sellerId || !order.paymentMethod) {
-            throw new Error('Complétez le client, le téléphone, l’adresse, la zone, le vendeur et le paiement.');
+              !order.zoneId || !order.paymentMethod) {
+            throw new Error('Complétez le client, le téléphone, l’adresse, la zone et le paiement.');
           }
           return {
             ...Object.fromEntries(fields.map(([field]) => [field, order[field]?.trim() ?? ''])),
-            zoneId: order.zoneId, sellerId: order.sellerId, paymentMethod: order.paymentMethod, items,
+            zoneId: order.zoneId, paymentMethod: order.paymentMethod, items,
           };
         } catch (err) {
           throw new Error(`Commande ${index + 1} · ${err.message}`);
@@ -152,12 +151,6 @@ export default function OrderImport({ sellers, zones, onImported }) {
                       <select value={order.zoneId} onChange={(event) => update(order.id, (row) => ({ ...row, zoneId: event.target.value }))}>
                         <option value="">{order.zoneName ? `Zone à identifier · ${order.zoneName}` : 'Sélectionner une zone'}</option>
                         {zones.map((entry) => <option key={entry.id} value={entry.id}>{entry.nom}</option>)}
-                      </select>
-                    </label>
-                    <label>Vendeur
-                      <select value={order.sellerId} onChange={(event) => update(order.id, (row) => ({ ...row, sellerId: event.target.value }))}>
-                        <option value="">{order.sellerName ? `Vendeur à identifier · ${order.sellerName}` : 'Sélectionner un vendeur'}</option>
-                        {sellers.map((entry) => <option key={entry.id} value={entry.id}>{entry.nom}</option>)}
                       </select>
                     </label>
                     <label>Paiement

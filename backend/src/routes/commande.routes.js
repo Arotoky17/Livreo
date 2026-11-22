@@ -17,11 +17,11 @@ router.use(authenticate);
 router.get('/', authorize('ADMIN', 'SELLER'), getOrders);
 router.get('/:id', authorize('ADMIN', 'SELLER'), getOrderById);
 
-// Vendeur & Admin peuvent créer une commande
-router.post('/', authorize('ADMIN', 'SELLER'), createOrder);
-router.post('/import', authorize('ADMIN'), importOrders);
+// Le vendeur enregistre ses ventes et importe ses commandes
+router.post('/', authorize('SELLER'), createOrder);
+router.post('/import', authorize('SELLER'), importOrders);
 
-// Seul l'administrateur valide la commande et déclenche la génération de suivi
+// Validation des anciennes commandes encore en attente
 router.patch('/:id/validate', authorize('ADMIN'), validateOrder);
 
 export default router;

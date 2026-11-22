@@ -12,7 +12,6 @@ const orderSchema = z.object({
   deliveryDetails: z.string().trim().max(500).default(''),
   notes: z.string().trim().max(500).default(''),
   zoneId: z.string().uuid(),
-  sellerId: z.string().uuid(),
   paymentMethod: z.enum(['CASH_ON_DELIVERY', 'PREPAID']),
   items: z.array(z.object({
     productName: requiredText(160),
@@ -47,19 +46,16 @@ export async function importOrders(req, res, next) {
     return res.status(400).json({ message: `${row}Vérifiez les champs obligatoires et les valeurs (50 commandes maximum, 30 articles par commande).` });
   }
 
-  const { orders, preview } = parsed.data;
+  const { preview } = parsed.data;
+  const orders = parsed.data.orders.map(({ paymentMethod, items, ...order }) => ({ ...order, sellerId: req.user.id, paymentMethod, items }));
   const keys = orders.map(orderKey);
   const uniqueKeys = [...new Set(keys)];
   try {
-    const [zones, sellers] = await Promise.all([
-      prisma.zone.findMany({ where: { id: { in: orders.map((order) => order.zoneId) }, isActive: true } }),
-      prisma.user.findMany({ where: { id: { in: orders.map((order) => order.sellerId) }, role: 'SELLER', isActive: true }, select: { id: true } }),
-    ]);
+    const zones = await prisma.zone.findMany({ where: { id: { in: orders.map((order) => order.zoneId) }, isActive: true } });
     const zoneById = new Map(zones.map((zone) => [zone.id, zone]));
-    const sellerIds = new Set(sellers.map((seller) => seller.id));
-    const invalidRow = orders.findIndex((order) => !zoneById.has(order.zoneId) || !sellerIds.has(order.sellerId));
+    const invalidRow = orders.findIndex((order) => !zoneById.has(order.zoneId));
     if (invalidRow !== -1) {
-      return res.status(400).json({ message: `Commande ${invalidRow + 1} · Sélectionnez une zone et un vendeur actifs.` });
+      return res.status(400).json({ message: `Commande ${invalidRow + 1} · Sélectionnez une zone active.` });
     }
 
     if (preview) {
@@ -104,7 +100,7 @@ export async function importOrders(req, res, next) {
                   status: 'VALIDEE',
                   statusHistories: { create: {
                     status: 'VALIDEE',
-                    comment: 'Commande importée et validée par l’administrateur',
+                    comment: 'Commande importée, livraison prête à être affectée',
                     changedById: req.user.id,
                   } },
                 } },
