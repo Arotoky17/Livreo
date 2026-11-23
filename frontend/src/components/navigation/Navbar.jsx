@@ -21,7 +21,9 @@ export default function Navbar() {
   const navigate = useNavigate();
   const [menuOpen, setMenuOpen] = useState(false);
   const menuButton = useRef(null);
-  const isHome = location.pathname === '/';
+  const pathname = location.pathname.replace(/\/+$/, '') || '/';
+  const isHome = ['/', '/a-propos', '/contact'].includes(pathname);
+  const isTracking = ['/tracking', '/suivi'].includes(pathname);
 
   const handleLogout = () => {
     logout();
@@ -40,7 +42,7 @@ export default function Navbar() {
       }}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
         {/* 1. Logo fidèle à la maquette */}
-        <Logo className={location.pathname === '/' ? 'landing-brand' : ''} />
+        <Logo className={isHome ? 'landing-brand' : ''} />
 
         {/* 2. Menu central en capsule (Pill Navigation) */}
         <nav id="public-navigation" aria-label="Navigation principale"
@@ -62,9 +64,9 @@ export default function Navbar() {
 
           <Link
             to="/tracking"
-            aria-current={location.pathname === '/tracking' ? 'page' : undefined}
+            aria-current={isTracking ? 'page' : undefined}
             className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-semibold transition ${
-              location.pathname === '/tracking'
+              isTracking
                 ? 'bg-blue-600 text-white shadow-sm'
                 : 'text-slate-600 hover:text-blue-600 hover:bg-white/60'
             }`}

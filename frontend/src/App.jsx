@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, Link } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext.jsx';
 import Navbar from './components/navigation/Navbar.jsx';
 import HomePage from './pages/public/HomePage.jsx';
@@ -42,9 +42,12 @@ export default function App() {
             <Routes>
               {/* Page d'Accueil conforme à la maquette */}
               <Route path="/" element={<HomePage />} />
+              <Route path="/a-propos" element={<HomePage section="a-propos" />} />
+              <Route path="/contact" element={<HomePage section="contact" />} />
               
               {/* Page de Suivi de Commande Client avec Carte & Satellite */}
               <Route path="/tracking" element={<PublicTrackingPage />} />
+              <Route path="/suivi" element={<PublicTrackingPage />} />
               
               {/* Page de Connexion */}
               <Route path="/login" element={<LoginPage />} />
@@ -75,7 +78,13 @@ export default function App() {
                   </ProtectedRoute>
                 }
               />
-              <Route path="*" element={<Navigate to="/" replace />} />
+              <Route path="*" element={
+                <section className="mx-auto max-w-xl px-6 py-24 text-center">
+                  <h1 className="text-3xl font-bold">404 — Page introuvable</h1>
+                  <p className="mt-4 text-slate-600">La page demandée est introuvable.</p>
+                  <Link className="mt-6 inline-block font-semibold text-blue-700 underline" to="/">Retour à l’accueil</Link>
+                </section>
+              } />
             </Routes>
           </main>
         </div>

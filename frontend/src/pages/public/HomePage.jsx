@@ -17,14 +17,15 @@ function ContactLink({ href, children, icon: Icon }) {
   return href ? <a className="landing-button home-secondary" href={href} target={href.startsWith('tel:') ? undefined : '_blank'} rel="noopener noreferrer"><Icon size={20} />{children}<ArrowRight size={17} /></a> : <span className="home-contact-unavailable"><Icon size={20} />{children}<small>Coordonnées à venir</small></span>;
 }
 
-export default function HomePage() {
-  const { hash } = useLocation();
+export default function HomePage({ section }) {
+  const { hash, key } = useLocation();
+  const target = hash.slice(1) || section;
 
   useEffect(() => {
-    if (hash) {
-      document.getElementById(hash.slice(1))?.scrollIntoView({ behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
+    if (target) {
+      document.getElementById(target)?.scrollIntoView({ behavior: section || window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
     }
-  }, [hash]);
+  }, [key, section, target]);
 
   return (
     <div className="livreo-home">
