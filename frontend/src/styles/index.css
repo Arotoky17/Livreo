@@ -10,6 +10,15 @@ html, body {
   color: #0f172a;
 }
 
+#root :is(button, [role="button"], .landing-button, .footer-tracking-link, .adm-primary-button, .adm-secondary-button, .adm-text-button, .login-back):not(.adm-sidebar-overlay, :focus-visible) {
+  outline: 1px solid #9ba8ba80;
+  outline-offset: -1px;
+}
+
+#root :is(button, [role="button"], .landing-button, .footer-tracking-link, .adm-primary-button, .adm-secondary-button, .adm-text-button, .login-back):not(.adm-sidebar-overlay, :focus-visible, :disabled, [aria-disabled="true"]):hover {
+  outline-color: #b8c5d6;
+}
+
 /* Fix z-index pour Leaflet */
 .leaflet-pane {
   z-index: 10 !important;
