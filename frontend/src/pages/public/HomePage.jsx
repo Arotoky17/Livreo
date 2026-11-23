@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { MapPin, ShieldCheck, Zap, PackageCheck, Truck, ArrowRight, MessageCircle, Phone } from 'lucide-react';
+import { MapPin, ShieldCheck, Zap, PackageCheck, Truck, ArrowRight, MessageCircle, Phone, Headphones } from 'lucide-react';
 import Logo from '../../components/navigation/Logo.jsx';
 import TrackingMapPreview from '../../components/home/TrackingMapPreview.jsx';
 import { homeConfig } from '../../config/home.js';
@@ -56,6 +56,14 @@ export default function HomePage({ section }) {
           </span></h1>
           <p>Livreo centralise vos commandes et vous permet de suivre votre livraison en temps réel, partout à Madagascar.</p>
         </div>
+      </section>
+
+      <section className="landing-services" aria-label="Services Livreo">
+        <ul className="landing-service-list">
+          <li><MapPin aria-hidden="true" /><span>Suivi en temps réel</span></li>
+          <li><PackageCheck aria-hidden="true" /><span>Gestion simplifiée</span></li>
+          <li><Headphones aria-hidden="true" /><span>Support dédié</span></li>
+        </ul>
       </section>
 
       <section className="landing-benefits" aria-label="Les avantages Livreo">
