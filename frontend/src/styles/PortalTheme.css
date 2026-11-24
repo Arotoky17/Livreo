@@ -1,0 +1,115 @@
+.order-rate-grid {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(0, 1fr);
+  gap: 10px;
+  padding: 12px 14px 0;
+}
+.order-rate {
+  --ring-color: #008579;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  padding: 8px;
+  border: 1px solid var(--adm-border);
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--ring-color) 5%, var(--portal-surface, white));
+}
+.order-rate-waiting { --ring-color: #a96000; }
+.order-rate-gauge {
+  display: grid;
+  place-items: center;
+  flex: 0 0 64px;
+  color: var(--ring-color);
+}
+.order-rate-gauge > * { grid-area: 1 / 1; }
+.order-rate-gauge svg { width: 64px; }
+.order-rate-gauge circle { fill: none; stroke-width: 6; }
+.order-rate-track { stroke: var(--adm-border); }
+.order-rate-fill { stroke: currentColor; stroke-linecap: round; }
+.order-rate h3 { font-size: 12px; font-weight: 700; }
+.order-rate p { font-size: 11px; color: var(--adm-muted); }
+@media (max-width: 550px) {
+  .order-rate { flex-direction: column; text-align: center; }
+  .order-rate-gauge { flex-basis: auto; }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .order-rate-fill { animation: order-rate-draw .65s ease-out; }
+  .stats-refresh { animation: adm-heading-in .35s ease-out; }
+  .seller-portal .adm-chart-series { animation: adm-series-in .48s ease-out; }
+}
+@keyframes order-rate-draw { from { stroke-dashoffset: 100; } }
+
+.admin-app.portal-dark {
+  color-scheme: dark;
+  --adm-ink: #e6efff;
+  --adm-muted: #a9bad4;
+  --adm-border: #354662;
+  --adm-chart-delivered: #53e0c7;
+  --portal-surface: #172439;
+  --portal-raised: #21314a;
+  --portal-link: #9bc5ff;
+  background: #101a2a;
+  color: var(--adm-ink);
+}
+.admin-app.portal-dark :is(.adm-sidebar, .adm-topbar, .adm-panel, .adm-modal, .adm-modal > header, .driver-mobile-nav) {
+  background: var(--portal-surface);
+  border-color: var(--adm-border);
+}
+.admin-app.portal-dark :is(.adm-sidebar-footer, .adm-search, .adm-date, .adm-periods, .adm-zone, .fin-switch,
+.fin-metric, .fin-filters label, .fin-detail, .wizard-progress, .wizard-item, .wizard-confirm > div,
+.import-order, .driver-course, .portal-search, .adm-secondary-button, .adm-toolbar select,
+.adm-form input, .adm-form textarea, .adm-form select, .wizard-form input, .wizard-form textarea, .wizard-form select) {
+  background: var(--portal-raised);
+  border-color: var(--adm-border);
+  color: var(--adm-ink);
+}
+.admin-app.portal-dark .adm-metric {
+  background: linear-gradient(135deg, var(--portal-surface), color-mix(in srgb, var(--tone) 16%, var(--portal-surface)));
+}
+.admin-app.portal-dark .adm-metric-icon {
+  color: color-mix(in srgb, var(--tone) 42%, #fff);
+  background: color-mix(in srgb, var(--tone) 24%, var(--portal-surface));
+}
+.admin-app.portal-dark :is(.adm-metric h2, .adm-metric p, .adm-page-heading p, .adm-table small, .adm-muted, .adm-empty,
+.adm-toolbar label, .adm-form label, .wizard-form label, .portal-muted, .portal-profile dt,
+.portal-map p, .driver-course p, .driver-next p, .fin-metric h2, .fin-note, .adm-workspace-footer) {
+  color: var(--adm-muted);
+}
+.admin-app.portal-dark :is(.adm-brand a span:first-child, .adm-profile, .adm-sidebar nav button, .adm-logout,
+.fin-metric strong, .fin-filters select, .fin-search input, .wizard-footer > div:first-child strong,
+.driver-mobile-nav button) { color: var(--adm-ink); }
+.admin-app.portal-dark :is(.adm-brand > span, .adm-sidebar-footer > span, .adm-back-home, .adm-icon-button,
+.adm-text-button, .adm-eyebrow, .portal-topbar-label, .adm-table tbody td:first-child strong,
+.adm-panel-heading h2 > svg, .adm-total) { color: var(--portal-link); }
+.admin-app.portal-dark :is(.adm-panel-heading, .adm-table td, .wizard-footer, .driver-course-bottom, .portal-profile > div) {
+  border-color: var(--adm-border);
+}
+.admin-app.portal-dark :is(.adm-table th, .fin-table .adm-table tr:nth-child(even), .adm-table tbody tr:hover,
+.adm-sidebar nav button:not(.active):hover, .adm-logout:hover, .adm-icon-button:hover, .adm-table .adm-icon-button,
+.adm-secondary-button:hover, .tour-option:has(:checked)) {
+  background: var(--portal-raised);
+  color: var(--adm-ink);
+}
+.admin-app.portal-dark :is(.adm-sidebar nav button.active, .driver-mobile-nav button[aria-current="page"]) { color: white; }
+.admin-app.portal-dark :is(.wizard-progress > div.active, .wizard-product-icon, .wizard-footer > div:first-child,
+.wizard-footer > div:first-child small, .import-file) { color: #e0caff; }
+.admin-app.portal-dark :is(.wizard-product-icon, .wizard-footer > div:first-child, .import-file) { background: #302548; }
+.admin-app.portal-dark :is(.driver-gps.enabled, .driver-course[data-status="EN_ROUTE"], .driver-course[data-status="EN_ROUTE"] .adm-secondary-button) {
+  color: #a1f4df;
+  background: #163b38;
+  border-color: #487e75;
+}
+.admin-app.portal-dark .driver-detail .portal-profile a[href^="tel:"] {
+  color: var(--portal-link);
+  background: var(--portal-raised);
+  border-color: var(--adm-border);
+}
+.admin-app.portal-dark .order-rate-delivered { --ring-color: #53e0c7; }
+.admin-app.portal-dark .order-rate-waiting { --ring-color: #ffc46e; }
+.admin-app.portal-dark .adm-chart-gridline { stroke: var(--adm-border); }
+.admin-app.portal-dark .adm-chart text { fill: var(--adm-muted); }
+.admin-app.portal-dark .adm-chart-series-orders polyline { stroke: #70a8ff; }
+.admin-app.portal-dark .adm-chart-series-orders circle,
+.admin-app.portal-dark .adm-chart-legend span:first-child i { fill: #70a8ff; background: #70a8ff; }

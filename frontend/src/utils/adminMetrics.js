@@ -30,6 +30,19 @@ export function dailyActivity(orders, deliveries, days, now) {
   }
   return buckets;
 }
+export function orderPeriodTotals(orders, buckets, deliveries = []) {
+  const dates = new Set(buckets.map(({ date }) => date));
+  const deliveryStatuses = new Map(deliveries.map(({ orderId, order, status }) => [orderId ?? order?.id, status]));
+  const totals = { total: 0, delivered: 0, waiting: 0 };
+  for (const order of orders) {
+    if (!dates.has(dayFormat.format(new Date(order.createdAt)))) continue;
+    const status = deliveryStatuses.get(order.id) ?? order.delivery?.status ?? order.status;
+    totals.total++;
+    if (status === 'LIVREE') totals.delivered++;
+    if (status === 'VALIDEE' || status === 'REPROGRAMMEE') totals.waiting++;
+  }
+  return totals;
+}
 export function sellerBalances(deliveries) {
   const balances = new Map();
   for (const delivery of deliveries) {

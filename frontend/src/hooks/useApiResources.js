@@ -22,7 +22,7 @@ export default function useApiResources(resources, intervalMs = 15000) {
     });
     setData((previous) => ({ ...previous, ...next }));
     setErrors(failed);
-    setUpdatedAt(new Date());
+    if (Object.keys(next).length) setUpdatedAt(new Date());
   }, [resources, abort]);
   useEffect(() => {
     // Synchronize with the API; state updates follow the awaited network requests.

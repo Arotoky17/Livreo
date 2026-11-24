@@ -71,7 +71,7 @@ export default function AdminFinances({ deliveries, section, onSection, onDetail
   }
 
   return <div className="adm-finances">
-    <div className="fin-metrics">
+    <div className="fin-metrics stats-refresh" key={now}>
       {[[Wallet, 'Total encaissé', totals.collected, 'blue'], [Truck, 'Frais de livraison', totals.fees, 'violet'],
         [Banknote, 'Montant à reverser', totals.due, 'green'], [Store, 'Vendeurs concernés', balances.length, 'teal']].map(([Icon, label, value, tone]) =>
         <section key={label} className={`fin-metric fin-${tone}`}>

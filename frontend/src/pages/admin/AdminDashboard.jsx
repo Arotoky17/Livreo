@@ -1,3 +1,6 @@
+import usePortalTheme from '../../hooks/usePortalTheme.js';
+import OrderRateRings from '../../components/ui/OrderRateRings.jsx';
+import ThemeToggle from '../../components/ui/ThemeToggle.jsx';
 import { Badge, Empty, Panel, Dialog } from '../../components/ui/PortalUI.jsx';
 import ActivityChart from '../../components/ui/ActivityChart.jsx';
 import { useCallback, useEffect, useRef, useState } from 'react';
@@ -9,7 +12,7 @@ import MapComponent from '../../components/delivery/MapComponent.jsx';
 import AdminFinances from './AdminFinances.jsx';
 import DeliveryOrganisation from './DeliveryOrganisation.jsx';
 import { useAuth } from '../../context/AuthContext.jsx';
-import { money, dateTime, statusLabels, matches, dailyActivity } from '../../utils/adminMetrics.js';
+import { money, dateTime, statusLabels, matches, dailyActivity, orderPeriodTotals } from '../../utils/adminMetrics.js';
 import '../../styles/AdminDashboard.css';
 
 const navigation = [
@@ -48,6 +51,7 @@ export default function AdminDashboard() {
   const [data, setData] = useState(initialData);
   const [loading, setLoading] = useState(true);
   const [failures, setFailures] = useState([]);
+  const theme = usePortalTheme();
   const [updatedAt, setUpdatedAt] = useState(null);
   const [query, setQuery] = useState('');
   const [status, setStatus] = useState('');
@@ -75,7 +79,7 @@ export default function AdminDashboard() {
       const [key, , field, label] = resources[index];
       if (result.status === 'fulfilled') next[key] = result.value.data[field]; else errors.push(label);
     });
-    setData((previous) => ({ ...previous, ...next })); setFailures(errors); setUpdatedAt(new Date()); setLoading(false);
+    setData((previous) => ({ ...previous, ...next })); setFailures(errors); if (Object.keys(next).length) setUpdatedAt(new Date()); setLoading(false);
   }, []);
   useEffect(() => {
     void loadData();
@@ -155,7 +159,7 @@ export default function AdminDashboard() {
     return <div className="adm-activity">{rows.map((item) => <button key={item.id} className="adm-activity-item" onClick={() => showOrder(item.order)}><span className={`adm-event-icon status-${item.status}`}>{item.status === 'LIVREE' ? <CheckCircle2 size={17} /> : item.status === 'ECHEC' ? <AlertCircle size={17} /> : <ShoppingCart size={17} />}</span><span>{item.text}<small>{dateTime(item.at)}</small></span><ChevronRight size={15} /></button>)}{!rows.length && <Empty>Aucune activité disponible.</Empty>}</div>;
   }
   return (
-    <div className={`admin-app admin-portal ${collapsed ? 'sidebar-collapsed' : ''}`}>
+    <div className={`admin-app admin-portal ${theme.dark ? 'portal-dark' : ''} ${collapsed ? 'sidebar-collapsed' : ''}`}>
       {sidebarOpen && <button className="adm-sidebar-overlay" onClick={() => setSidebarOpen(false)} aria-label="Fermer le menu" />}
       <aside className={`adm-sidebar ${sidebarOpen ? 'is-open' : ''}`} aria-label="Navigation administrateur">
         <div className="adm-brand"><Logo /><span>Livraison · Suivi · Confiance</span></div>
@@ -169,7 +173,7 @@ export default function AdminDashboard() {
         <Link className="adm-back-home" to="/">Retour à l’accueil<ArrowRight size={14} /></Link>
       </aside>
       <div className="adm-workspace">
-        <header className="adm-topbar"><button className="adm-icon-button adm-menu-toggle" onClick={() => { if (window.matchMedia('(max-width: 767px)').matches) setSidebarOpen(!sidebarOpen); else setCollapsed(!collapsed); }} aria-label="Afficher ou masquer le menu"><Menu size={20} /></button><form className="adm-search" onSubmit={(event) => { event.preventDefault(); if (section === 'dashboard') { setParams({ section: 'orders' }); setPage(1); } }}><Search size={18} /><input aria-label="Rechercher dans la section" placeholder={['drivers', 'sellers'].includes(section) ? 'Rechercher un nom, un email, un téléphone…' : 'Rechercher une commande, un livreur…'} value={query} onChange={(event) => { setQuery(event.target.value); setPage(1); }} />{query && <button type="button" onClick={() => { setQuery(''); setPage(1); }} aria-label="Effacer la recherche"><X size={15} /></button>}</form><div className="adm-topbar-right"><button className="adm-notification adm-icon-button" onClick={() => go('activity')} aria-label="Voir l’activité récente"><Bell size={20} />{pending > 0 && <b>{pending}</b>}</button><div className="adm-profile"><span className="adm-avatar">{firstName.slice(0, 1).toUpperCase()}</span><span>{firstName}<small>Administrateur</small></span><ChevronDown size={14} /></div></div></header>
+        <header className="adm-topbar"><button className="adm-icon-button adm-menu-toggle" onClick={() => { if (window.matchMedia('(max-width: 767px)').matches) setSidebarOpen(!sidebarOpen); else setCollapsed(!collapsed); }} aria-label="Afficher ou masquer le menu"><Menu size={20} /></button><form className="adm-search" onSubmit={(event) => { event.preventDefault(); if (section === 'dashboard') { setParams({ section: 'orders' }); setPage(1); } }}><Search size={18} /><input aria-label="Rechercher dans la section" placeholder={['drivers', 'sellers'].includes(section) ? 'Rechercher un nom, un email, un téléphone…' : 'Rechercher une commande, un livreur…'} value={query} onChange={(event) => { setQuery(event.target.value); setPage(1); }} />{query && <button type="button" onClick={() => { setQuery(''); setPage(1); }} aria-label="Effacer la recherche"><X size={15} /></button>}</form><div className="adm-topbar-right"><ThemeToggle {...theme} /><button className="adm-notification adm-icon-button" onClick={() => go('activity')} aria-label="Voir l’activité récente"><Bell size={20} />{pending > 0 && <b>{pending}</b>}</button><div className="adm-profile"><span className="adm-avatar">{firstName.slice(0, 1).toUpperCase()}</span><span>{firstName}<small>Administrateur</small></span><ChevronDown size={14} /></div></div></header>
         <main className="adm-main">
           <div className="adm-page-heading"><div className={financeSection ? "fin-heading" : undefined}>{financeSection && <span className="fin-heading-icon"><Wallet size={24} /></span>}<div><span className="adm-eyebrow">ESPACE ADMINISTRATION</span><h1>{section === 'dashboard' ? <><span className="adm-wave" aria-hidden="true">👋</span>Bonjour {firstName} !</> : financeSection ? 'Encaissements / Reversements' : heading}</h1><p>{section === 'dashboard' ? 'Voici un aperçu de votre activité.' : financeSection ? 'Consultez les encaissements de vos livraisons et les montants à reverser.' : 'Organisez et suivez vos livraisons au même endroit.'}</p></div></div><div className="adm-heading-actions"><span className="adm-date"><CalendarDays size={16} />{updatedAt ? new Intl.DateTimeFormat('fr-FR', { timeZone: 'Indian/Antananarivo', day: 'numeric', month: 'long', year: 'numeric' }).format(updatedAt) : 'Chargement…'}</span><button className="adm-icon-button" disabled={loading || busy} onClick={refresh} aria-label="Actualiser les données"><RefreshCw className={loading ? 'adm-spinning' : ''} size={18} /></button></div></div>
           {loading && !updatedAt && <p className="adm-feedback" role="status">Chargement des données Livreo…</p>}
@@ -179,13 +183,13 @@ export default function AdminDashboard() {
           {failures.length > 0 && <div className="adm-feedback error" role="alert"><AlertCircle size={18} /><span>Chargement impossible : {failures.join(', ')}. Les dernières données disponibles sont conservées.</span><button onClick={refresh} disabled={loading}>Réessayer</button></div>}
           {notice && <div className={`adm-feedback ${notice.type}`} role="status">{notice.type === 'success' ? <CheckCircle2 size={18} /> : <AlertCircle size={18} />}<span>{notice.text}</span><button className="adm-icon-button" onClick={() => setNotice(null)} aria-label="Fermer le message"><X size={15} /></button></div>}
           {section === 'dashboard' && <>
-            <div className="adm-metrics">{[
+            <div className="adm-metrics stats-refresh" key={now}>{[
               { title: 'Total commandes', value: data.stats?.totalOrders, caption: `${pending} en attente de validation`, icon: ShoppingCart, tone: 'blue', field: 'orders', color: '#0860f5' },
               { title: 'Livraisons en cours', value: data.stats?.inRouteDeliveries, caption: `${freshCount} livreur(s) avec GPS récent`, icon: Truck, tone: 'green', field: 'started', color: '#22c55e' },
               { title: 'Livraisons terminées', value: data.stats?.completedDeliveries, caption: `${data.stats?.failedDeliveries ?? '—'} livraison(s) en échec`, icon: CheckCircle2, tone: 'purple', field: 'delivered', color: '#a855f7' },
               { title: 'Montant encaissé', value: data.stats ? money(data.stats.totalCollected) : null, caption: `Frais : ${data.stats ? money(data.stats.totalDeliveryFees) : '—'}`, icon: Wallet, tone: 'orange', field: 'collected', color: '#f59e0b' },
             ].map(({ title, value, caption, icon: Icon, tone, field, color }) => <section className={`adm-metric tone-${tone}`} key={title}><span className="adm-metric-icon"><Icon size={25} /></span><div><h2>{title}</h2><strong>{value ?? '—'}</strong><p>{caption}</p></div>{data.orders && data.deliveries && <ActivityChart compact buckets={recentBuckets} field={field} color={color} chartId={`spark-${tone}`} />}</section>)}</div>
-            <div className="adm-dashboard-grid"><Panel title="Évolution des commandes" icon={BarChart3} action={<div className="adm-periods">{[7, 30, 90].map((period) => <button key={period} className={days === period ? 'active' : ''} onClick={() => setDays(period)} aria-pressed={days === period}>{period}j</button>)}</div>}><div className="adm-chart-legend"><span><i />Commandes</span><span><i />Livraisons terminées</span></div>{data.orders && data.deliveries ? <ActivityChart key={days} buckets={buckets} /> : <Empty>Les données du graphique ne sont pas disponibles.</Empty>}</Panel>{deliverySummaryPanel()}<Panel title="Dernières commandes" icon={ShoppingCart} className="adm-recent-orders" action={<button className="adm-text-button" onClick={() => go('orders')}>Voir tout<ArrowRight size={14} /></button>}>{orderTable(filteredOrders.slice(0, 5), true)}</Panel><Panel title="Activité récente" icon={Bell} action={<button className="adm-text-button" onClick={() => go('activity')}>Voir tout<ArrowRight size={14} /></button>}>{activityList()}</Panel></div>
+            <div className="adm-dashboard-grid"><Panel title="Commandes et livraisons" icon={BarChart3} action={<div className="adm-periods">{[7, 30, 90].map((period) => <button key={period} className={days === period ? 'active' : ''} onClick={() => setDays(period)} aria-pressed={days === period}>{period}j</button>)}</div>}><div className="adm-chart-legend"><span><i />Commandes</span><span><i />Livraisons terminées</span></div>{data.orders && data.deliveries ? <div key={`${days}-${now}`}><OrderRateRings includeWaiting totals={orderPeriodTotals(orders, buckets, deliveries)} /><ActivityChart buckets={buckets} /></div> : <Empty>Les données du graphique ne sont pas disponibles.</Empty>}</Panel>{deliverySummaryPanel()}<Panel title="Dernières commandes" icon={ShoppingCart} className="adm-recent-orders" action={<button className="adm-text-button" onClick={() => go('orders')}>Voir tout<ArrowRight size={14} /></button>}>{orderTable(filteredOrders.slice(0, 5), true)}</Panel><Panel title="Activité récente" icon={Bell} action={<button className="adm-text-button" onClick={() => go('activity')}>Voir tout<ArrowRight size={14} /></button>}>{activityList()}</Panel></div>
           </>}
           {section === 'orders' && <Panel title="Gestion des commandes" icon={ShoppingCart}><div className="adm-toolbar"><label>Statut<select value={status} onChange={(event) => { setStatus(event.target.value); setPage(1); }}><option value="">Tous les statuts</option>{Object.entries(statusLabels).map(([key, label]) => <option key={key} value={key}>{label}</option>)}</select></label><button className="adm-secondary-button" onClick={() => go('dispatch')}><Route size={16} />Affecter les livraisons</button></div>{orderTable(filteredOrders.slice((page - 1) * pageSize, page * pageSize))}<div className="adm-pagination"><span>{filteredOrders.length} résultat(s) · Page {page} sur {Math.max(1, Math.ceil(filteredOrders.length / pageSize))}</span><button className="adm-icon-button" disabled={page <= 1} onClick={() => setPage(page - 1)} aria-label="Page précédente"><ChevronLeft size={18} /></button><button className="adm-icon-button" disabled={page * pageSize >= filteredOrders.length} onClick={() => setPage(page + 1)} aria-label="Page suivante"><ChevronRight size={18} /></button></div></Panel>}
           {section === 'dispatch' && data.deliveries && data.users && <DeliveryOrganisation

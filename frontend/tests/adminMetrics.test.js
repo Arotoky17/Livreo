@@ -1,6 +1,19 @@
 ﻿import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { dailyActivity, matches, sellerBalances } from '../src/utils/adminMetrics.js';
+import { dailyActivity, matches, orderPeriodTotals, sellerBalances } from '../src/utils/adminMetrics.js';
+
+test('order rings count only orders created on the selected Madagascar dates', () => {
+  const orders = [
+    { id: 'old', createdAt: '2026-11-12T20:59:00Z', status: 'LIVREE' },
+    { id: 'done', createdAt: '2026-11-12T21:01:00Z', status: 'VALIDEE' },
+    { id: 'waiting', createdAt: '2026-11-13T08:00:00Z', delivery: { status: 'REPROGRAMMEE' } },
+    { id: 'pending', createdAt: '2026-11-13T08:00:00Z', status: 'EN_ATTENTE' },
+  ];
+  const buckets = dailyActivity([], [], 1, Date.parse('2026-11-13T09:00:00Z'));
+  assert.deepEqual(orderPeriodTotals(orders, buckets, [{ orderId: 'done', status: 'LIVREE' }]), {
+    total: 3, delivered: 1, waiting: 1,
+  });
+});
 
 test('daily chart uses Madagascar dates across the UTC midnight boundary', () => {
   const rows = dailyActivity([
