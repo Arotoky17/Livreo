@@ -1,8 +1,8 @@
 ﻿import { useCallback, useEffect, useRef, useState } from 'react';
 import api from '../services/api.js';
 
-// Keep resource definitions at module scope so polling does not restart on renders.
-export default function useApiResources(resources, intervalMs = 15000) {
+// Keep resource definitions at module scope so the initial request does not restart on renders.
+export default function useApiResources(resources) {
   const [data, setData] = useState(() => Object.fromEntries(resources.map(([key]) => [key, null])));
   const [errors, setErrors] = useState([]);
   const [updatedAt, setUpdatedAt] = useState(null);
@@ -28,9 +28,8 @@ export default function useApiResources(resources, intervalMs = 15000) {
     // Synchronize with the API; state updates follow the awaited network requests.
     // eslint-disable-next-line react/set-state-in-effect
     void refresh();
-    const timer = intervalMs ? setInterval(() => { if (!document.hidden) void refresh(); }, intervalMs) : null;
-    return () => { if (timer) clearInterval(timer); abort(); };
-  }, [refresh, abort, intervalMs]);
+    return abort;
+  }, [refresh, abort]);
   return { data, setData, errors, updatedAt, refresh };
 }
 

@@ -1,3 +1,5 @@
+import useStatisticsIntro from '../../hooks/useStatisticsIntro.js';
+import StatisticValue from '../../components/ui/StatisticValue.jsx';
 import usePortalTheme from '../../hooks/usePortalTheme.js';
 import OrderRateRings from '../../components/ui/OrderRateRings.jsx';
 import ThemeToggle from '../../components/ui/ThemeToggle.jsx';
@@ -83,9 +85,9 @@ export default function AdminDashboard() {
   }, []);
   useEffect(() => {
     void loadData();
-    const interval = setInterval(() => { if (!document.hidden) void loadData(); }, 15000);
-    return () => { clearInterval(interval); abortPending(); };
+    return abortPending;
   }, [loadData, abortPending]);
+  const progress = useStatisticsIntro(Boolean(data.stats));
   const refresh = () => { setLoading(true); void loadData(); };
   const go = (key) => { setParams(key === 'dashboard' ? {} : { section: key }); setQuery(''); setStatus(''); setPage(1); setSidebarOpen(false); };
   const closeModal = useCallback(() => { if (!busy) { setModal(null); setActionError(''); } }, [busy]);
@@ -140,9 +142,9 @@ export default function AdminDashboard() {
             {deliverySummary.map(([status, field, label]) => (
               <li key={status}>
                 <span>{label}</span>
-                <strong>{stats[field]}</strong>
+                <strong><StatisticValue value={stats[field]} progress={progress} /></strong>
                 <span className="adm-delivery-summary-track" aria-hidden="true">
-                  <span className={`status-${status}`} style={{ width: `${total ? stats[field] / total * 100 : 0}%` }} />
+                  <span className={`status-${status}`} style={{ width: `${total ? stats[field] / total * 100 * progress : 0}%` }} />
                 </span>
               </li>
             ))}
@@ -152,7 +154,7 @@ export default function AdminDashboard() {
     );
   }
   function mapPanel() {
-    return <Panel title="Suivi des livreurs en temps réel" icon={MapPin} className="adm-map-panel" action={<span className="adm-online"><span />GPS récent : {freshCount}</span>}><div className="adm-map-wrap"><MapComponent markers={markers} height="480px" zoom={12} />{!markers.length && <div className="adm-map-caption">{data.live === null ? 'Positions GPS indisponibles' : 'Aucun signal GPS reçu pour les livraisons en cours'}</div>}</div><div className="adm-map-list">{live.map((delivery) => <div key={delivery.id}><strong>{delivery.deliveryPerson?.nom ?? 'Non affectée'}</strong><span>{delivery.trackingCode}</span><span>{delivery.gpsLogs[0] ? `${dateTime(delivery.gpsLogs[0].recordedAt)}${now - new Date(delivery.gpsLogs[0].recordedAt).getTime() > 180000 ? ' · Signal ancien' : ' · Signal récent'}` : 'En attente de signal'}</span></div>)}</div></Panel>;
+    return <Panel title="Dernières positions des livreurs" icon={MapPin} className="adm-map-panel" action={<span className="adm-online"><span />GPS récent : {freshCount}</span>}><div className="adm-map-wrap"><MapComponent markers={markers} height="480px" zoom={12} />{!markers.length && <div className="adm-map-caption">{data.live === null ? 'Positions GPS indisponibles' : 'Aucun signal GPS reçu pour les livraisons en cours'}</div>}</div><div className="adm-map-list">{live.map((delivery) => <div key={delivery.id}><strong>{delivery.deliveryPerson?.nom ?? 'Non affectée'}</strong><span>{delivery.trackingCode}</span><span>{delivery.gpsLogs[0] ? `${dateTime(delivery.gpsLogs[0].recordedAt)}${now - new Date(delivery.gpsLogs[0].recordedAt).getTime() > 180000 ? ' · Signal ancien' : ' · Signal récent'}` : 'En attente de signal'}</span></div>)}</div></Panel>;
   }
   function activityList(all = false) {
     const rows = activity.filter((item) => matches(query, item.text)).slice(0, all ? 50 : 5);
@@ -183,13 +185,13 @@ export default function AdminDashboard() {
           {failures.length > 0 && <div className="adm-feedback error" role="alert"><AlertCircle size={18} /><span>Chargement impossible : {failures.join(', ')}. Les dernières données disponibles sont conservées.</span><button onClick={refresh} disabled={loading}>Réessayer</button></div>}
           {notice && <div className={`adm-feedback ${notice.type}`} role="status">{notice.type === 'success' ? <CheckCircle2 size={18} /> : <AlertCircle size={18} />}<span>{notice.text}</span><button className="adm-icon-button" onClick={() => setNotice(null)} aria-label="Fermer le message"><X size={15} /></button></div>}
           {section === 'dashboard' && <>
-            <div className="adm-metrics stats-refresh" key={now}>{[
+            <div className="adm-metrics">{[
               { title: 'Total commandes', value: data.stats?.totalOrders, caption: `${pending} en attente de validation`, icon: ShoppingCart, tone: 'blue', field: 'orders', color: '#0860f5' },
               { title: 'Livraisons en cours', value: data.stats?.inRouteDeliveries, caption: `${freshCount} livreur(s) avec GPS récent`, icon: Truck, tone: 'green', field: 'started', color: '#22c55e' },
               { title: 'Livraisons terminées', value: data.stats?.completedDeliveries, caption: `${data.stats?.failedDeliveries ?? '—'} livraison(s) en échec`, icon: CheckCircle2, tone: 'purple', field: 'delivered', color: '#a855f7' },
-              { title: 'Montant encaissé', value: data.stats ? money(data.stats.totalCollected) : null, caption: `Frais : ${data.stats ? money(data.stats.totalDeliveryFees) : '—'}`, icon: Wallet, tone: 'orange', field: 'collected', color: '#f59e0b' },
-            ].map(({ title, value, caption, icon: Icon, tone, field, color }) => <section className={`adm-metric tone-${tone}`} key={title}><span className="adm-metric-icon"><Icon size={25} /></span><div><h2>{title}</h2><strong>{value ?? '—'}</strong><p>{caption}</p></div>{data.orders && data.deliveries && <ActivityChart compact buckets={recentBuckets} field={field} color={color} chartId={`spark-${tone}`} />}</section>)}</div>
-            <div className="adm-dashboard-grid"><Panel title="Commandes et livraisons" icon={BarChart3} action={<div className="adm-periods">{[7, 30, 90].map((period) => <button key={period} className={days === period ? 'active' : ''} onClick={() => setDays(period)} aria-pressed={days === period}>{period}j</button>)}</div>}><div className="adm-chart-legend"><span><i />Commandes</span><span><i />Livraisons terminées</span></div>{data.orders && data.deliveries ? <div key={`${days}-${now}`}><OrderRateRings includeWaiting totals={orderPeriodTotals(orders, buckets, deliveries)} /><ActivityChart buckets={buckets} /></div> : <Empty>Les données du graphique ne sont pas disponibles.</Empty>}</Panel>{deliverySummaryPanel()}<Panel title="Dernières commandes" icon={ShoppingCart} className="adm-recent-orders" action={<button className="adm-text-button" onClick={() => go('orders')}>Voir tout<ArrowRight size={14} /></button>}>{orderTable(filteredOrders.slice(0, 5), true)}</Panel><Panel title="Activité récente" icon={Bell} action={<button className="adm-text-button" onClick={() => go('activity')}>Voir tout<ArrowRight size={14} /></button>}>{activityList()}</Panel></div>
+              { title: 'Montant encaissé', value: data.stats?.totalCollected, format: money, caption: `Frais : ${data.stats ? money(data.stats.totalDeliveryFees) : '—'}`, icon: Wallet, tone: 'orange', field: 'collected', color: '#f59e0b' },
+            ].map(({ title, value, caption, icon: Icon, tone, field, color, format }) => <section className={`adm-metric tone-${tone}`} key={title}><span className="adm-metric-icon"><Icon size={25} /></span><div><h2>{title}</h2><strong><StatisticValue value={value} progress={progress} format={format} /></strong><p>{caption}</p></div>{data.orders && data.deliveries && <ActivityChart compact buckets={recentBuckets} field={field} color={color} chartId={`spark-${tone}`} />}</section>)}</div>
+            <div className="adm-dashboard-grid"><Panel title="Commandes et livraisons" icon={BarChart3} action={<div className="adm-periods">{[7, 30, 90].map((period) => <button key={period} className={days === period ? 'active' : ''} onClick={() => setDays(period)} aria-pressed={days === period}>{period}j</button>)}</div>}><div className="adm-chart-legend"><span><i />Commandes</span><span><i />Livraisons terminées</span></div>{data.orders && data.deliveries ? <div><OrderRateRings progress={progress} includeWaiting totals={orderPeriodTotals(orders, buckets, deliveries)} /><ActivityChart buckets={buckets} /></div> : <Empty>Les données du graphique ne sont pas disponibles.</Empty>}</Panel>{deliverySummaryPanel()}<Panel title="Dernières commandes" icon={ShoppingCart} className="adm-recent-orders" action={<button className="adm-text-button" onClick={() => go('orders')}>Voir tout<ArrowRight size={14} /></button>}>{orderTable(filteredOrders.slice(0, 5), true)}</Panel><Panel title="Activité récente" icon={Bell} action={<button className="adm-text-button" onClick={() => go('activity')}>Voir tout<ArrowRight size={14} /></button>}>{activityList()}</Panel></div>
           </>}
           {section === 'orders' && <Panel title="Gestion des commandes" icon={ShoppingCart}><div className="adm-toolbar"><label>Statut<select value={status} onChange={(event) => { setStatus(event.target.value); setPage(1); }}><option value="">Tous les statuts</option>{Object.entries(statusLabels).map(([key, label]) => <option key={key} value={key}>{label}</option>)}</select></label><button className="adm-secondary-button" onClick={() => go('dispatch')}><Route size={16} />Affecter les livraisons</button></div>{orderTable(filteredOrders.slice((page - 1) * pageSize, page * pageSize))}<div className="adm-pagination"><span>{filteredOrders.length} résultat(s) · Page {page} sur {Math.max(1, Math.ceil(filteredOrders.length / pageSize))}</span><button className="adm-icon-button" disabled={page <= 1} onClick={() => setPage(page - 1)} aria-label="Page précédente"><ChevronLeft size={18} /></button><button className="adm-icon-button" disabled={page * pageSize >= filteredOrders.length} onClick={() => setPage(page + 1)} aria-label="Page suivante"><ChevronRight size={18} /></button></div></Panel>}
           {section === 'dispatch' && data.deliveries && data.users && <DeliveryOrganisation
@@ -202,7 +204,7 @@ export default function AdminDashboard() {
           {section === 'zones' && <Panel title="Zones de livraison et frais associés" icon={MapPin} action={<button className="adm-primary-button" onClick={() => openModal({ kind: 'zone' })}><Plus size={16} />Ajouter une zone</button>}><div className="adm-zone-grid">{zones.filter((zone) => matches(query, zone.nom, zone.description)).map((zone) => <article className="adm-zone" key={zone.id}><span className="adm-zone-icon"><MapPin size={24} /></span><h3>{zone.nom}</h3><p>{zone.description || 'Zone de livraison active'}</p><strong>{money(zone.fraisLivraison)}</strong><small>Frais par livraison</small></article>)}</div>{!zones.length && <Empty>Aucune zone disponible.</Empty>}</Panel>}
           {financeSection && <AdminFinances deliveries={data.deliveries} section={section} onSection={go} onDetails={showOrder} query={query} now={now} />}
           {section === 'activity' && <Panel title="Derniers changements et commandes reçues" icon={Bell}><p className="adm-inline-note">Dernier état des livraisons. L’historique horodaté complet est consultable dans le détail de chaque commande.</p>{activityList(true)}</Panel>}
-          <footer className="adm-workspace-footer"><span>Livreo · Administration des livraisons</span><span>{updatedAt ? `Dernière actualisation : ${dateTime(updatedAt)}` : 'Connexion aux données…'} · Actualisation toutes les 15 s</span></footer>
+          <footer className="adm-workspace-footer"><span>Livreo · Administration des livraisons</span><span>{updatedAt ? `Dernière actualisation : ${dateTime(updatedAt)}` : 'Connexion aux données…'}</span></footer>
         </main>
       </div>
       {modal && <Dialog title={{ detail: 'Détail de la commande', assign: 'Affecter une livraison', user: modal.role === 'DELIVERY' ? 'Nouveau livreur' : 'Nouveau vendeur', zone: 'Nouvelle zone de livraison', toggle: modal.account?.isActive ? 'Suspendre le compte' : 'Activer le compte', reprogram: 'Reprogrammer la livraison' }[modal.kind]} onClose={closeModal}>
