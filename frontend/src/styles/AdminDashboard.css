@@ -106,6 +106,69 @@
 .adm-chart-legend span { display: inline-flex; align-items: center; gap: 5px; }
 .adm-chart-legend i { width: 7px; height: 7px; background: #0860f5; border-radius: 50%; }
 .adm-chart-legend span:last-child i { background: #22c55e; }
+
+:is(.admin-portal, .role-portal) {
+  --adm-ink: #112342;
+  --adm-border: #dae5f4;
+  background: #f0f5fc;
+}
+:is(.admin-portal, .role-portal) .adm-sidebar {
+  background: #fff;
+  border-right: 1px solid var(--adm-border);
+  color: var(--adm-ink);
+}
+:is(.admin-portal, .role-portal) .adm-brand a span:first-child { color: var(--adm-ink); }
+:is(.admin-portal, .role-portal) .adm-brand > span,
+:is(.admin-portal, .role-portal) .adm-sidebar-footer > span,
+:is(.admin-portal, .role-portal) .adm-back-home { color: #536d90; }
+:is(.admin-portal, .role-portal) .adm-sidebar nav button,
+:is(.admin-portal, .role-portal) .adm-logout { color: #294568; }
+:is(.admin-portal, .role-portal) .adm-sidebar nav button:hover,
+:is(.admin-portal, .role-portal) .adm-logout:hover { background: #eef4ff; }
+:is(.admin-portal, .role-portal) .adm-sidebar nav button.active {
+  color: #fff;
+  background: var(--adm-blue);
+  box-shadow: 0 4px 10px #0860f52b;
+}
+:is(.admin-portal, .role-portal) .adm-sidebar-footer { background: #f3f7fe; border-color: var(--adm-border); }
+:is(.admin-portal, .role-portal) .adm-city { color: #28578d; }
+:is(.admin-portal, .role-portal) .adm-panel,
+:is(.admin-portal, .role-portal) .adm-metric { box-shadow: 0 4px 16px #183c7510; }
+:is(.admin-portal, .role-portal) .adm-metric {
+  background: linear-gradient(135deg, #fff, color-mix(in srgb, var(--tone) 10%, #fff));
+}
+:is(.admin-portal, .role-portal) .adm-metric-icon {
+  color: color-mix(in srgb, var(--tone) 65%, #102843);
+  background: color-mix(in srgb, var(--tone) 16%, #fff);
+  box-shadow: none;
+}
+.admin-portal { --adm-chart-delivered: #008579; }
+.admin-portal .fin-heading-icon { background: #007e72; box-shadow: 0 5px 12px #007e7226; }
+.admin-portal .tour-count { background: #fff2d8; color: #805000; }
+.admin-portal .tour-option:hover { border-color: #639aff; }
+.admin-portal .adm-chart-legend i { width: 17px; height: 3px; }
+.admin-portal .adm-chart-legend span:last-child i {
+  background: repeating-linear-gradient(to right, var(--adm-chart-delivered) 0 5px, transparent 5px 8px);
+}
+.admin-portal .adm-chart-series-orders polyline { stroke-width: 3.5; }
+.admin-portal .adm-chart-series-delivered polyline {
+  stroke: var(--adm-chart-delivered);
+  stroke-dasharray: 5 5;
+}
+.admin-portal .adm-chart-series-delivered circle { fill: var(--adm-chart-delivered); }
+
+@media (prefers-reduced-motion: no-preference) {
+  :is(.admin-portal, .role-portal) .adm-main > .adm-page-heading { animation: adm-heading-in .24s ease-out both; }
+  .admin-portal .adm-chart-series { animation: adm-series-in .48s ease-out both; }
+}
+@keyframes adm-heading-in {
+  from { opacity: 0; transform: translateY(5px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes adm-series-in {
+  from { clip-path: inset(0 100% 0 0); }
+  to { clip-path: inset(0); }
+}
 .adm-online { display: inline-flex; align-items: center; gap: 5px; padding: 4px 8px; border-radius: 15px; background: #e7f9ed; color: #16a34a; white-space: nowrap; font-size: 10px; font-weight: 650; }
 .adm-online > span { width: 6px; height: 6px; border-radius: 50%; background: #22c55e; }
 .adm-map-wrap { position: relative; padding: 4px 5px 5px; }

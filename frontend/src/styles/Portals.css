@@ -39,3 +39,105 @@
   .import-item { grid-template-columns: repeat(2, minmax(0, 1fr)) auto; }
   .import-item label:first-child { grid-column: 1 / -1; }
 }
+
+.seller-portal {
+  --seller-accent: #6535bd;
+  --seller-tint: #f3edff;
+}
+.seller-portal .portal-topbar-label,
+.seller-portal .wizard-progress > div.active { color: var(--seller-accent); }
+.seller-portal .adm-table th { background: #f3f6fc; }
+.seller-portal .adm-table tbody td:first-child strong { color: #164cab; }
+.seller-portal .wizard-progress { background: #faf8ff; }
+.seller-portal .wizard-progress > div.active > span { background: var(--seller-accent); }
+.seller-portal .wizard-progress > div[aria-current="step"] > span {
+  box-shadow: 0 0 0 4px #e7d9ff;
+}
+.seller-portal .wizard-product-icon,
+.seller-portal .wizard-footer > div:first-child {
+  color: var(--seller-accent);
+  background: var(--seller-tint);
+}
+.seller-portal .wizard-footer > div:first-child { padding: 10px 14px; border-radius: 10px; }
+.seller-portal .wizard-footer > div:first-child small { color: #594380; }
+.seller-portal .import-file {
+  gap: 12px;
+  padding: 18px;
+  border: 1px dashed #9c7ad5;
+  border-radius: 12px;
+  color: var(--seller-accent);
+  background: var(--seller-tint);
+}
+.seller-portal .import-file > span { display: flex; align-items: center; gap: 8px; }
+.seller-portal .import-file input::file-selector-button {
+  border: 0;
+  border-radius: 6px;
+  padding: 6px 10px;
+  margin-inline-end: 8px;
+  color: var(--seller-accent);
+  background: var(--seller-tint);
+  cursor: pointer;
+}
+
+.driver-portal .driver-metrics { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.driver-portal .driver-gps.enabled { color: #006554; background: #dcf8ef; border-color: #a7e8d6; }
+.driver-course[data-status="EN_ROUTE"] { border-color: #65cbb6; background: #f2fcf9; }
+.driver-course[data-status="AFFECTEE"] { border-inline-start: 3px solid #d99a28; }
+.driver-course[data-status="EN_ROUTE"] .adm-secondary-button { color: #006554; background: #dcf8ef; }
+.driver-detail .portal-profile a[href^="tel:"] {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 8px 10px;
+  min-height: 44px;
+  border: 1px solid #c4dbfb;
+  border-radius: 8px;
+  background: #f1f7ff;
+}
+.driver-portal .adm-main > .adm-panel + .adm-panel { margin-top: 16px; }
+.driver-mobile-nav { display: none; }
+
+@media (max-width: 767px) {
+  .driver-portal .adm-main { padding-bottom: calc(92px + env(safe-area-inset-bottom, 0px)); }
+  .driver-mobile-nav {
+    position: fixed;
+    inset: auto 0 0;
+    z-index: 40;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 6px;
+    padding: 8px 12px calc(8px + env(safe-area-inset-bottom, 0px));
+    background: #fff;
+    border-top: 1px solid var(--adm-border);
+    box-shadow: 0 -4px 20px #183c7514;
+  }
+  .driver-mobile-nav button {
+    display: grid;
+    justify-items: center;
+    align-content: center;
+    gap: 4px;
+    min-height: 49px;
+    border-radius: 9px;
+    color: #294568;
+    font-size: 11px;
+  }
+  .driver-mobile-nav button[aria-current="page"] { color: #fff; background: var(--adm-blue); }
+  .driver-course-bottom button,
+  .driver-next > button { width: 100%; min-height: 44px; justify-content: center; }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .seller-portal .wizard-step { animation: adm-heading-in .22s ease-out both; }
+  .driver-portal .live-position .custom-driver-pin::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    border: 2px solid #0860f5;
+    pointer-events: none;
+    animation: driver-gps-pulse 1.8s ease-out 3;
+  }
+}
+@keyframes driver-gps-pulse {
+  from { transform: scale(1); opacity: .75; }
+  to { transform: scale(1.9); opacity: 0; }
+}

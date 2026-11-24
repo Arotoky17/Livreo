@@ -108,7 +108,7 @@ export default function OrderImport({ zones, onImported }) {
       <div className="wizard-form">
         <h2>Fichier ou texte</h2>
         <p className="portal-muted">CSV ou première feuille d’un classeur Excel .xlsx. Utilisez une ligne par article et répétez la référence pour regrouper les articles d’une commande. Dans Excel, définissez la colonne Téléphone au format Texte.</p>
-        <label className="import-input">Fichier de commandes
+        <label className="import-input import-file"><span><FileUp size={22} aria-hidden="true" /> Fichier de commandes</span>
           <input type="file" accept=".csv,.xlsx" disabled={busy} onChange={loadFile} />
         </label>
         <a className="adm-text-button" download="modele-commandes.csv"

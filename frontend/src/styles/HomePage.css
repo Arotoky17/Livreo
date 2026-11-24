@@ -629,7 +629,8 @@
   .landing-hero::before { right: 0; height: 180px; }
   .hero-copy { width: 100%; max-width: none; }
   .hero-copy h1 { font-size: clamp(30px, 7vw, 50px); }
-  .hero-art { position: relative; order: 1; width: calc(100% + 2 * var(--gutter)); height: 49vw; margin: 16px calc(-1 * var(--gutter)) 0; mask-image: linear-gradient(#000 85%, #000c 92%, transparent 100%); }
+  /* Crop the embedded service strip from the mobile artwork. */
+  .hero-art { position: relative; order: 1; width: calc(100% + 2 * var(--gutter)); height: 44vw; margin: 16px calc(-1 * var(--gutter)) 0; mask-image: linear-gradient(#000 94%, transparent 100%); }
   .hero-art img { width: 178%; top: -13vw; }
   .landing-service-list li { flex-direction: column; text-align: center; gap: 5px; padding-inline: 4px; }
   .landing-contact { grid-template-columns: repeat(2, minmax(0, 1fr)); }
