@@ -3,6 +3,7 @@ import jwt from 'jsonwebtoken';
 import prisma from '../config/db.js';
 import { ENV } from '../config/env.js';
 import { profilePhotos } from '../services/profilePhoto.service.js';
+import { passwordSession } from '../services/passwordSession.js';
 
 export const login = async (req, res, next) => {
   try {
@@ -48,6 +49,7 @@ export const login = async (req, res, next) => {
         email: user.email,
         role: user.role,
         nom: user.nom,
+        passwordSession: passwordSession(user.password),
       },
       ENV.JWT_SECRET,
       { expiresIn: ENV.JWT_EXPIRES_IN }
@@ -66,6 +68,44 @@ export const login = async (req, res, next) => {
         avatarUrl: user.role === 'DELIVERY' ? await profilePhotos.get(user.id) : null,
       },
     });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const changePassword = async (req, res, next) => {
+  try {
+    const { currentPassword, newPassword } = req.body ?? {};
+    if (typeof currentPassword !== 'string' || !currentPassword || typeof newPassword !== 'string') {
+      return res.status(400).json({ success: false, message: 'Renseignez les deux mots de passe.' });
+    }
+    if ([...newPassword].length < 15 || Buffer.byteLength(newPassword, 'utf8') > 72) {
+      return res.status(400).json({ success: false, message: 'Le nouveau mot de passe doit comporter au moins 15 caractères et tenir dans 72 octets.' });
+    }
+
+    const user = await prisma.user.findUnique({
+      where: { id: req.user.id },
+      select: { password: true },
+    });
+    if (!user || req.passwordSession !== passwordSession(user.password)) {
+      return res.status(401).json({ success: false, message: 'Votre session a expiré. Reconnectez-vous.' });
+    }
+    if (!(await bcrypt.compare(currentPassword, user.password))) {
+      return res.status(400).json({ success: false, message: 'Le mot de passe actuel est incorrect.' });
+    }
+    if (await bcrypt.compare(newPassword, user.password)) {
+      return res.status(400).json({ success: false, message: 'Choisissez un mot de passe différent du mot de passe actuel.' });
+    }
+
+    const password = await bcrypt.hash(newPassword, 10);
+    const result = await prisma.user.updateMany({
+      where: { id: req.user.id, password: user.password, isActive: true },
+      data: { password },
+    });
+    if (result.count === 0) {
+      return res.status(401).json({ success: false, message: 'Votre session a expiré. Reconnectez-vous.' });
+    }
+    return res.status(204).end();
   } catch (error) {
     next(error);
   }

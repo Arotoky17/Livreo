@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Link, useNavigate, useSearchParams } from 'react-router-dom';
+import { Link, useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import { AlertCircle, ArrowLeft, ArrowRight, Eye, EyeOff, LockKeyhole, Mail, PackageSearch } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext.jsx';
 import Logo from '../../components/navigation/Logo.jsx';
@@ -13,6 +13,7 @@ const destinationByRole = {
 
 export default function LoginPage() {
   const [params] = useSearchParams();
+  const { state } = useLocation();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [visible, setVisible] = useState(false);
@@ -58,6 +59,10 @@ export default function LoginPage() {
           )}
           {params.has('expired') && !error && (
             <p className="login-notice" role="status">Votre session a expiré. Reconnectez-vous.</p>
+          )}
+
+          {state?.passwordChanged && !error && (
+            <p className="login-notice" role="status">Mot de passe modifié. Connectez-vous avec votre nouveau mot de passe.</p>
           )}
 
           <form onSubmit={handleSubmit}>

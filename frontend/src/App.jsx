@@ -5,6 +5,7 @@ import Navbar from './components/navigation/Navbar.jsx';
 import HomePage from './pages/public/HomePage.jsx';
 import PublicTrackingPage from './pages/public/PublicTrackingPage.jsx';
 import LoginPage from './pages/public/LoginPage.jsx';
+import ChangePasswordPage from './pages/ChangePasswordPage.jsx';
 import AdminDashboard from './pages/admin/AdminDashboard.jsx';
 import DeliveryDriverPage from './pages/delivery/DeliveryDriverPage.jsx';
 import SellerOrdersPage from './pages/seller/SellerOrdersPage.jsx';
@@ -51,6 +52,7 @@ export default function App() {
               
               {/* Page de Connexion */}
               <Route path="/login" element={<LoginPage />} />
+              <Route path="/compte/mot-de-passe" element={<ProtectedRoute><ChangePasswordPage /></ProtectedRoute>} />
 
               {/* Espaces d'administration et de gestion protégés par rôles */}
               <Route

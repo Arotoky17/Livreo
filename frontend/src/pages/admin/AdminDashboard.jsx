@@ -170,6 +170,7 @@ export default function AdminDashboard() {
           const groupLabel = navigationGroups.find(([first]) => first === key)?.[1];
           return <button key={key} className={active ? 'active' : ''} onClick={() => go(key)} aria-current={active ? (groupLabel ? 'true' : 'page') : undefined}><Icon size={18} /><span>{groupLabel ?? label}</span>{key === 'orders' && pending > 0 && <b>{pending}</b>}</button>;
         })}</nav>
+        <Link className="adm-back-home" to="/compte/mot-de-passe"><ShieldCheck size={16} />Changer mon mot de passe</Link>
         <button className="adm-logout" onClick={() => { logout(); navigate('/login'); }}><LogOut size={18} />Déconnexion</button>
         <div className="adm-sidebar-footer"><ShieldCheck size={26} /><strong>Administrateur</strong><span>Gestion des livraisons Livreo</span><div className="adm-city" aria-hidden="true">▂ ▃ ▆ ▄ ▂ ▅ ▃ ▆ ▂</div></div>
         <Link className="adm-back-home" to="/">Retour à l’accueil<ArrowRight size={14} /></Link>

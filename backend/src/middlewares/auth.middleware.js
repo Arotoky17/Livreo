@@ -1,6 +1,7 @@
 import jwt from 'jsonwebtoken';
 import { ENV } from '../config/env.js';
 import prisma from '../config/db.js';
+import { passwordSession } from '../services/passwordSession.js';
 
 export const authenticate = async (req, res, next) => {
   try {
@@ -24,6 +25,7 @@ export const authenticate = async (req, res, next) => {
         telephone: true,
         role: true,
         isActive: true,
+        password: true,
       },
     });
 
@@ -41,7 +43,15 @@ export const authenticate = async (req, res, next) => {
       });
     }
 
-    req.user = user;
+    const { password, ...publicUser } = user;
+    if (decoded.passwordSession !== passwordSession(password)) {
+      return res.status(401).json({
+        success: false,
+        message: 'Votre session a expiré. Reconnectez-vous.',
+      });
+    }
+    req.passwordSession = decoded.passwordSession;
+    req.user = publicUser;
     next();
   } catch (error) {
     if (error.name === 'TokenExpiredError') {

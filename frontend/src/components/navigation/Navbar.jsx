@@ -30,7 +30,7 @@ export default function Navbar() {
     navigate('/');
   };
 
-  if (['/admin', '/delivery', '/seller', '/login'].includes(location.pathname)) return null;
+  if (['/admin', '/delivery', '/seller', '/login', '/compte/mot-de-passe'].includes(pathname)) return null;
 
   return (
     <header className={`${isHome ? 'landing-header' : 'sticky top-0 bg-white/95 backdrop-blur-md border-b border-slate-100'} z-40`}

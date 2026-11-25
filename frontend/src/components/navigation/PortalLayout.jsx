@@ -2,7 +2,7 @@ import usePortalTheme from '../../hooks/usePortalTheme.js';
 import ThemeToggle from '../ui/ThemeToggle.jsx';
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Menu, LogOut, ArrowRight, ShieldCheck, RefreshCw } from 'lucide-react';
+import { Menu, LogOut, ArrowRight, ShieldCheck, RefreshCw, LockKeyhole } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext.jsx';
 import Logo from './Logo.jsx';
 import Avatar from '../profile/Avatar.jsx';
@@ -22,6 +22,7 @@ export default function PortalLayout({ title, subtitle, navigation, section, onS
     <aside className={`adm-sidebar ${open ? 'is-open' : ''}`} aria-label={`Navigation ${role}`}>
       <div className="adm-brand"><Logo /><span>Livraison · Suivi · Confiance</span></div>
       <nav>{navigation.map(([key, label, Icon]) => <button key={key} className={section === key ? 'active' : ''} aria-current={section === key ? 'page' : undefined} onClick={() => { onSection(key); setOpen(false); }}><Icon size={18} />{label}</button>)}</nav>
+      <Link className="adm-back-home" to="/compte/mot-de-passe"><LockKeyhole size={16} />Changer mon mot de passe</Link>
       <button className="adm-logout" onClick={() => { logout(); navigate('/login'); }}><LogOut size={18} />Déconnexion</button>
       <div className="adm-sidebar-footer"><ShieldCheck size={26} /><strong>Espace {role.toLowerCase()}</strong><span>{user?.nom}</span><div className="adm-city" aria-hidden="true">▂ ▃ ▆ ▄ ▂ ▅ ▃ ▆ ▂</div></div>
       <Link className="adm-back-home" to="/">Retour à l’accueil<ArrowRight size={14} /></Link>
